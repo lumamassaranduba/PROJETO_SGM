@@ -27,7 +27,7 @@
                 <form id="formLogin">
                     <div class="mb-3">
                         <label class="form-label small fw-bold text-secondary">E-MAIL</label>
-                        <input type="email" id="email" class="form-control border-0 bg-light py-2" placeholder="usuario@smg.com" required>
+                        <input type="email" id="email" class="form-control border-0 bg-light py-2" placeholder="email" required>
                     </div>
 
                     <div class="mb-3">

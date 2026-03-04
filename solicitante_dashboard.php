@@ -17,9 +17,7 @@ if(!isset($_SESSION['user_id']) || $_SESSION['user_perfil'] !== 'solicitante'){
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <style>
         body { background-color: #f8f9fa; font-family: 'Inter', system-ui, sans-serif; }
-        /* Navbar seguindo o padrão sólido das imagens */
         .navbar-custom { background-color: #990202; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-        /* Estilo para a tabela e container */
         .main-card { border: none; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); background: white; }
         .table thead { background-color: #fcfcfc; }
         .table th { font-weight: 600; color: #495057; border-bottom: 2px solid #f1f1f1; }

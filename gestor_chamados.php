@@ -25,7 +25,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['user_perfil'] !== 'gestor') {
         
         <div class="navbar-nav ms-auto gap-2">
             <a class="nav-link px-3 rounded-pill text-light bg-white bg-opacity-10" href="gestor_chamados.php">Chamados</a>
-            <a class="nav-link px-3 text-light" href="gestor_locais.php">Locais</a>
+            <a class="nav-link px-3 text-light" href="./gestor_dashboard.php">Home</a>
             <a href="api/logout.php" class="btn btn-outline-light btn-sm ms-2 rounded-pill px-3">Sair</a>
         </div>
     </div>

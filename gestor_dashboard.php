@@ -83,17 +83,41 @@
             <div class="bg-white p-2 rounded-pill shadow-sm border d-flex gap-2">
                 <a href="./gestor_chamados.php" class="btn btn-danger px-4 rounded-pill fw-bold shadow-sm" style="background-color: #990202; border: none;">
                     <i class="bi bi-list-ul me-2"></i> Gerenciar todos os chamados.</a>
-                <a href="#" class="btn btn-light px-4 rounded-pill fw-bold text-secondary border">
+                <a href="#" class="btn btn-light px-4 rounded-pill fw-bold text-secondary border" data-bs-toggle="modal" data-bs-target="#exampleModal">
                     <i class="bi bi-geo-alt me-2"></i> Gerenciar locais.</a>
+                <a href="./gestor_servicos.php" class="btn btn-danger px-4 rounded-pill fw-bold shadow-sm" style="background-color: #990202; border: none;">
+                    <i class="bi bi-wrench-adjustable-circle-fill"></i></i>   Gerenciar tipos de serviços.</a>
+                <a href="./gestor_usuarios.php" class="btn btn-light px-4 rounded-pill fw-bold text-secondary border">
+                    <i class="bi bi-people"></i> Gerenciar usuários.</a>
             </div>
         </div>
     </div>
 
 </main>
 
+
+<!-- Modal -->
+<div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h1 class="modal-title fs-5" id="exampleModalLabel">Gerenciar locais</h1>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        Qual você deseja modificar?
+      </div>
+      <div class="modal-footer justify-content-center">
+        <a href="./gestor_blocos.php"><button type="button" class="btn text-light" style="background-color: #990202;" data-bs-dismiss="modal">Blocos</button></a>
+        <a href="./gestor_ambientes.php"><button type="button" class="btn text-light" style="background-color: #990202;">Ambientes</button></a>
+      </div>
+    </div>
+  </div>
+</div>
 <footer class="text-center mt-5 py-4 text-muted small">
     <p>&copy; 2026 SMG Gestão de Manutenção - Luma Massaranduba</p>
 </footer>
 
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

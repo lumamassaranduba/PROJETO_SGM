@@ -3,13 +3,12 @@ session_start();
 require_once '../config/database.php';
 header('Content-Type: application/json');
 
-// Proteção: Apenas Gestores
 if (!isset($_SESSION['user_id']) || $_SESSION['user_perfil'] !== 'gestor') {
     echo json_encode(["success" => false, "message" => "Acesso negado."]);
     exit;
 }
 
-// Filtros opcionais via GET
+
 $status = isset($_GET['status']) ? $conn->real_escape_string($_GET['status']) : '';
 $where = $status ? "WHERE c.status = '$status'" : "";
 

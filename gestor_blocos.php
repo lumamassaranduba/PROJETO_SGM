@@ -32,33 +32,71 @@
     </div>
 
 <div class="card border-0 shadow-sm rounded-4 overflow-hidden p-4">
-        <div class="table-responsive">
-            <table class="table">
-  <thead>
-    <tr>
-      <th scope="col">ID</th>
-      <th scope="col">BLOCO</th>
-      <th scope="col">GERENCIAR</th>
-      <th scope="col">DELETAR</th>
-    </tr>
-  </thead>
-  <tbody class="table-group-divider">
-    <tr>
-      <th scope="row">1</th>
-      <td>Administrativo</td>
-      <td><a href="./gestor_atualizar_blocos.php"><button class="btn btn-sm px-3 rounded-pill bg-warning text-white shadow-sm"
-       style="font-size: 12px; font-weight: 600;"> <i class="bi bi-upload"></i> ATUALIZAR</button></a></td>
-   <td><a href="#"><button class="btn btn-sm px-3 rounded-pill text-white shadow-sm"
-       style="background-color: #990202; font-size: 12px; font-weight: 600;" onclick="alert('Deletado!')"
-> <i class="bi bi-trash3"></i> DELETAR</button></a></td>
-    </tr>
- </tr>
-     
-  </tbody>
-</table>
-        </div>
+    <div class="table-responsive">
+        <table class="table" id="tabelaBlocos"></table>
     </div>
 </div>
 
-
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+async function carregarBlocos() {
+    const res = await fetch('api/api_blocos.php');
+    const dados = await res.json();
+    const tabela = document.getElementById('tabelaBlocos');
+
+    tabela.innerHTML = `
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>BLOCO</th>
+            <th>GERENCIAR</th>
+            <th>DELETAR</th>
+        </tr>
+    </thead>
+    <tbody>
+        ${dados.data.map(b => `
+        <tr>
+            <td>${b.id_bloco}</td>
+            <td>${b.nome}</td>
+
+            <td>
+                <a href="gestor_atualizar_blocos.php?id=${b.id_bloco}">
+                    <button class="btn btn-sm px-3 rounded-pill bg-warning text-white shadow-sm">
+                        <i class="bi bi-upload"></i> ATUALIZAR
+                    </button>
+                </a>
+            </td>
+
+            <td>
+                <button class="btn btn-sm px-3 rounded-pill text-white shadow-sm"
+                style="background-color: #990202;"
+                onclick="deletarBloco(${b.id_bloco})">
+                    <i class="bi bi-trash3"></i> DELETAR
+                </button>
+            </td>
+        </tr>
+        `).join('')}
+    </tbody>
+    `;
+}
+
+function deletarBloco(id){
+    if(!confirm("Deseja deletar?")) return;
+
+    fetch('api/api_blocos.php', {
+        method:'DELETE',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({id_bloco:id})
+    })
+    .then(r=>r.json())
+    .then(d=>{
+        alert(d.message);
+        carregarBlocos();
+    });
+}
+
+carregarBlocos();
+</script>
+</body>
+</html>

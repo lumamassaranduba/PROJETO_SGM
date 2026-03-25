@@ -6,7 +6,6 @@
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
 </head>
-
 <body class="bg-light" style="font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;">
 
 <nav class="navbar navbar-expand-lg shadow-sm mb-5" style="background-color: #990202;">
@@ -15,7 +14,6 @@
             <i class="bi bi-arrow-left-circle-fill fs-4"></i>
         </a>
         <a class="navbar-brand text-light fw-bold" href="gestor_dashboard.php">SGM Admin</a>
-        
         <div class="navbar-nav ms-auto gap-2">
             <a class="nav-link px-3 rounded-pill text-light bg-white bg-opacity-10" href="gestor_chamados.php">Chamados</a>
             <a class="nav-link px-3 text-light" href="gestor_dashboard.php">Home</a>
@@ -31,36 +29,67 @@
             <i class="bi bi-plus-lg me-1"></i> Adicionar novo tipo de serviço</a>
     </div>
 
-<div class="card border-0 shadow-sm rounded-4 overflow-hidden p-4">
+    <div class="card border-0 shadow-sm rounded-4 overflow-hidden p-4">
         <div class="table-responsive">
             <table class="table">
-  <thead>
-    <tr>
-      <th scope="col">ID</th>
-      <th scope="col">NOME</th>
-      <th scope="col">DESCRIÇÃO</th>
-      <th scope="col">ATUALIZAR</th>
-      <th scope="col">DELETAR</th>
-    </tr>
-  </thead>
-  <tbody class="table-group-divider">
-    <tr>
-      <th scope="row">1</th>
-      <td>Elétrica</td>
-        <td>Tomada explodiu</td>
-      <td><a href="./gestor_atualizar_servicos.php"><button class="btn btn-sm px-3 rounded-pill bg-warning text-white shadow-sm"
-       style="font-size: 12px; font-weight: 600;"> <i class="bi bi-upload"></i> ATUALIZAR</button></a></td>
-   <td><a href="#"><button class="btn btn-sm px-3 rounded-pill text-white shadow-sm"
-       style="background-color: #990202; font-size: 12px; font-weight: 600;" onclick="alert('Deletado!')"
-> <i class="bi bi-trash3"></i> DELETAR</button></a></td>
-    </tr>
- </tr>
-     
-  </tbody>
-</table>
+                <thead>
+                    <tr>
+                        <th scope="col">ID</th>
+                        <th scope="col">NOME</th>
+                        <th scope="col">DESCRIÇÃO</th>
+                        <th scope="col">ATUALIZAR</th>
+                        <th scope="col">DELETAR</th>
+                    </tr>
+                </thead>
+                <tbody id="tabela-corpo" class="table-group-divider">
+                    </tbody>
+            </table>
         </div>
     </div>
-</div>
+</main>
 
+<script>
+async function carregarTabela() {
+    const res = await fetch('api/api_servicos.php');
+    const json = await res.json();
+    const lista = document.getElementById('tabela-corpo');
+    lista.innerHTML = '';
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    json.data.forEach(item => {
+        lista.innerHTML += `
+            <tr>
+                <th scope="row">${item.id_tipo}</th>
+                <td>${item.nome}</td>
+                <td>${item.descricao}</td>
+                <td>
+                    <a href="./gestor_atualizar_servicos.php?id=${item.id_tipo}">
+                        <button class="btn btn-sm px-3 rounded-pill bg-warning text-white shadow-sm" style="font-size: 12px; font-weight: 600;"> 
+                            <i class="bi bi-upload"></i> ATUALIZAR
+                        </button>
+                    </a>
+                </td>
+                <td>
+                    <button class="btn btn-sm px-3 rounded-pill text-white shadow-sm" style="background-color: #990202; font-size: 12px; font-weight: 600;" 
+                    onclick="deletarItem(${item.id_tipo})"> 
+                        <i class="bi bi-trash3"></i> DELETAR
+                    </button>
+                </td>
+            </tr>`;
+    });
+}
+
+async function deletarItem(id) {
+    if(confirm("Tem certeza que deseja deletar?")) {
+        const res = await fetch('api/api_servicos.php', {
+            method: 'DELETE',
+            body: JSON.stringify({ id_tipo: id })
+        });
+        const resultado = await res.json();
+        alert(resultado.message);
+        carregarTabela();
+    }
+}
+document.addEventListener('DOMContentLoaded', carregarTabela);
+</script>
+</body>
+</html>

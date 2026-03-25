@@ -46,24 +46,24 @@
             
             <div class="form-card">
                 <div class="text-center mb-4">
-                    <i class="bi bi-plus-circle"></i>
+                    <i class="bi bi-plus-circle fs-1 text-danger"></i>
                     <h4 class="fw-bold text-dark mt-2">Registrar Serviço</h4>
                     <p class="text-muted small">Preencha os detalhes abaixo para que a criação de um novo tipo de serviço.</p>
                 </div>
 
-                <form id="formChamado">
+                <form id="formTipoServico">
     
                     <div class="mb-4">
                         <label class="form-label"> Nome do serviço que deseja adicionar</label>
-                        <textarea id="descricao" class="form-control" rows="4" required placeholder="Digite aqui..."></textarea>
+                        <input type="text" id="nome" class="form-control" required placeholder="Ex: Hidráulica">
                     </div>
 
                     <div class="mb-4">
                         <label class="form-label"> Descrição</label>
-                        <textarea id="descricao" class="form-control" rows="4" required placeholder="..."></textarea>
+                        <textarea id="descricao" class="form-control" rows="4" required placeholder="Descreva brevemente o serviço..."></textarea>
                     </div>
 
-                    <button type="submit" class="btn btn-submit w-100 py-3 mb-2 shadow-sm text-light"style="background-color: #990202;">
+                    <button type="submit" class="btn btn-submit w-100 py-3 mb-2 shadow-sm text-light" style="background-color: #990202;">
                         REGISTRAR NOVO TIPO DE SERVIÇO
                     </button>
                     
@@ -78,6 +78,45 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
+<script>
+    // Captura o formulário
+    const form = document.getElementById('formTipoServico');
+
+    form.addEventListener('submit', async (event) => {
+        // Impede o recarregamento da página
+        event.preventDefault();
+
+        // Coleta os dados dos campos
+        const dados = {
+            nome: document.getElementById('nome').value,
+            descricao: document.getElementById('descricao').value
+        };
+
+        try {
+            // Envia para a API via POST
+            const response = await fetch('api/api_servicos.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(dados)
+            });
+
+            const resultado = await response.json();
+
+            if (resultado.success) {
+                alert(resultado.message);
+                // Redireciona de volta para a lista de serviços
+                window.location.href = './gestor_servicos.php';
+            } else {
+                alert('Erro ao criar: ' + resultado.message);
+            }
+        } catch (error) {
+            console.error('Erro na requisição:', error);
+            alert('Não foi possível conectar à API.');
+        }
+    });
+</script>
 
 </body>
 </html>

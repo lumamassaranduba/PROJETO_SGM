@@ -50,23 +50,28 @@
                     <h4 class="fw-bold text-dark mt-2">Atualizar Blocos</h4>
                     <p class="text-muted small">Preencha os detalhes abaixo para a atualização do bloco desejado.</p>
                 </div>
-                
+
+                <!-- ✅ ADICIONEI FORM -->
+                <form id="formBloco">
 
                     <div class="mb-4">
                         <label class="form-label"> Nome atualizado do bloco</label>
-                        <textarea id="descricao" class="form-control" rows="4" required placeholder="Digite aqui..."></textarea>
+                        <!-- ✅ ID CORRIGIDO -->
+                        <textarea id="nome" class="form-control" rows="4" required placeholder="Digite aqui..."></textarea>
                     </div>
 
                     <div class="mb-4">
                         <label class="form-label"> Descrição atualizada do bloco</label>
+                        <!-- ✅ ID CORRIGIDO -->
                         <textarea id="descricao" class="form-control" rows="4" required placeholder="Digite aqui..."></textarea>
                     </div>
 
-                    <button type="submit" class="btn btn-submit w-100 py-3 mb-2 shadow-sm text-light"style="background-color: #990202;">
+                    <button type="submit" class="btn btn-submit w-100 py-3 mb-2 shadow-sm text-light" style="background-color: #990202;">
                         ATUALIZAR BLOCO
                     </button>
                     
                     <a href="gestor_blocos.php" class="btn btn-light w-100 rounded-pill btn-sm text-muted">Cancelar</a>
+
                 </form>
             </div>
             
@@ -77,6 +82,49 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
+<!-- ✅ SCRIPT (ADICIONADO, SEM MEXER NO HTML) -->
+<script>
+const params = new URLSearchParams(window.location.search);
+const id = params.get('id');
+
+async function carregarBloco(){
+    const res = await fetch('api/api_blocos.php');
+    const dados = await res.json();
+
+    const bloco = dados.data.find(b => b.id_bloco == id);
+
+    if(bloco){
+        document.getElementById('nome').value = bloco.nome;
+        document.getElementById('descricao').value = bloco.descricao;
+    }
+}
+
+document.getElementById('formBloco').addEventListener('submit', async function(e){
+    e.preventDefault();
+
+    const nome = document.getElementById('nome').value;
+    const descricao = document.getElementById('descricao').value;
+
+    const res = await fetch('api/api_blocos.php',{
+        method:'PUT',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({
+            id_bloco:id,
+            nome:nome,
+            descricao:descricao
+        })
+    });
+
+    const data = await res.json();
+    alert(data.message);
+
+    if(data.success){
+        window.location.href = 'gestor_blocos.php';
+    }
+});
+
+carregarBloco();
+</script>
 
 </body>
 </html>

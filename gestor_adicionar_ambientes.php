@@ -54,9 +54,9 @@
                 <form id="formChamado">
                     <div class="mb-3">
                         <label class="form-label">Bloco / Setor</label>
-                        <select id="selectBloco" class="form-select">
-                            <option value="">Selecione o bloco</option>
-                        </select>
+                        <select id="selectBloco" class="form-select" required>
+                                <option value="">Selecione o bloco</option>
+                            </select>
                     </div>
 
                 
@@ -80,7 +80,66 @@
 </main>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+async function iniciar() {
+    try {
+        const resB = await fetch('api/localizacoes.php?acao=listar_blocos');
+        
+        if (!resB.ok) throw new Error('Erro ao buscar dados da API');
+        
+        const blocos = await resB.json();
+        const selB = document.getElementById('selectBloco');
+        
+    
+        selB.innerHTML = '<option value="">Selecione o bloco</option>';
+        
+        blocos.forEach(b => {
+            
+            selB.innerHTML += `<option value="${b.id_bloco}">${b.nome}</option>`;
+        });
+    } catch (error) {
+        console.error("Erro ao carregar blocos:", error);
+    }
+}
 
+document.getElementById('formChamado').addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const id_bloco = document.getElementById('selectBloco').value;
+   
+    const nome_ambiente = document.getElementById('descricao').value;
+
+    const dados = {
+        id_bloco: id_bloco,
+        nome: nome_ambiente
+    };
+
+    try {
+        const response = await fetch('api/api_ambientes.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(dados)
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+            alert("Ambiente criado com sucesso!");
+            window.location.href = 'gestor_ambientes.php';
+        } else {
+            alert("Erro do servidor: " + (result.message || "Erro desconhecido"));
+        }
+    } catch (error) {
+        alert("Erro na requisição. Verifique se o caminho 'api/ambiente.php' está correto.");
+        console.error("Detalhes do erro:", error);
+    }
+});
+
+
+iniciar();
+</script>
 
 </body>
 </html>

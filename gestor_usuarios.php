@@ -1,3 +1,5 @@
+
+
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
@@ -33,24 +35,39 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2 class="fw-bold text-dark m-0 p-3">Visão Geral dos Usuários</h2>
         <a href="gestor_adicionar_usuario.php" class="btn text-white rounded-pill px-4 fw-bold shadow-sm m-3" style="background-color: #990202;">
-            <i class="bi bi-plus-lg me-1"></i> Adicionar novo usuario</a>
+            <i class="bi bi-plus-lg me-1"></i> Adicionar novo usuario
+        </a>
     </div>
 
-    <div class="card m-3" style="width: 18rem;">
-  <div class="card-body">
-    <h5 class="card-title">Maria </h5>
-    <h6 class="card-subtitle mb-2 text-body-secondary">SOLICITANTE</h6>
-    <a href="./gestor_atualizar_blocos.php"><button class="btn btn-sm px-3 rounded-pill bg-warning text-white shadow-sm"
-       style="font-size: 12px; font-weight: 600;"> <i class="bi bi-plus-lg me-1"></i> VER MAIS</button></a></td>
-  </div>
-</div>
+    <!-- CARDS DINÂMICOS -->
+    <div class="d-flex flex-wrap">
 
-<div class="card m-3" style="width: 18rem;">
-  <div class="card-body">
-    <h5 class="card-title">João  </h5>
-    <h6 class="card-subtitle mb-2 text-body-secondary">TÉCNICO</h6>
-    <a href="./gestor_atualizar_blocos.php"><button class="btn btn-sm px-3 rounded-pill bg-warning text-white shadow-sm"
-       style="font-size: 12px; font-weight: 600;"> <i class="bi bi-plus-lg me-1"></i> VER MAIS</button></a></td>
-  </div>
-</div>
+        <?php while($usuario = mysqli_fetch_assoc($result)) { ?>
 
+        <div class="card m-3" style="width: 18rem;">
+            <div class="card-body">
+
+                <h5 class="card-title"><?= $usuario['nome'] ?></h5>
+
+                <h6 class="card-subtitle mb-2 text-body-secondary">
+                    <?= strtoupper($usuario['perfil']) ?>
+                </h6>
+
+                <a href="gestor_usuario_detalhes.php?id=<?= $usuario['id'] ?>">
+                    <button class="btn btn-sm px-3 rounded-pill bg-warning text-white shadow-sm"
+                        style="font-size: 12px; font-weight: 600;">
+                        <i class="bi bi-plus-lg me-1"></i> VER MAIS
+                    </button>
+                </a>
+
+            </div>
+        </div>
+
+        <?php } ?>
+
+    </div>
+
+</main>
+
+</body>
+</html>

@@ -51,19 +51,22 @@
                     <p class="text-muted small">Preencha os detalhes abaixo para que a criação de um novo bloco.</p>
                 </div>
 
-                <form id="formChamado">
+                <!-- ✅ nome corrigido -->
+                <form id="formBloco">
     
                     <div class="mb-4">
                         <label class="form-label"> Nome do bloco que deseja adicionar</label>
-                        <textarea id="descricao" class="form-control" rows="4" required placeholder="Digite aqui..."></textarea>
+                        <!-- ✅ id corrigido -->
+                        <textarea id="nome" class="form-control" rows="4" required placeholder="Digite aqui..."></textarea>
                     </div>
 
                     <div class="mb-4">
                         <label class="form-label"> Descrição</label>
+                        <!-- ✅ id corrigido -->
                         <textarea id="descricao" class="form-control" rows="4" required placeholder="..."></textarea>
                     </div>
 
-                    <button type="submit" class="btn btn-submit w-100 py-3 mb-2 shadow-sm text-light"style="background-color: #990202;">
+                    <button type="submit" class="btn btn-submit w-100 py-3 mb-2 shadow-sm text-light" style="background-color: #990202;">
                         REGISTRAR NOVO BLOCO
                     </button>
                     
@@ -78,6 +81,31 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
+<!-- ✅ SCRIPT ADICIONADO -->
+<script>
+document.getElementById('formBloco').addEventListener('submit', async function(e){
+    e.preventDefault();
+
+    const nome = document.getElementById('nome').value;
+    const descricao = document.getElementById('descricao').value;
+
+    const res = await fetch('api/api_blocos.php',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({
+            nome:nome,
+            descricao:descricao
+        })
+    });
+
+    const data = await res.json();
+    alert(data.message);
+
+    if(data.success){
+        window.location.href = 'gestor_blocos.php';
+    }
+});
+</script>
 
 </body>
 </html>

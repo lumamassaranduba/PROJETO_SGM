@@ -13,7 +13,7 @@ $method = $_SERVER['REQUEST_METHOD'];
 switch($method){
     case 'GET':
         $sql = "SELECT  a.id_ambiente, a.nome, a.id_bloco, b.nome as nome_bloco 
-        FROM ambientes a LEFT JOIN blocos b ON a.id_bloco = b.id_bloco ORDER BY a.nome ASC";
+        FROM ambientes a LEFT JOIN blocos b ON a.id_bloco = b.id_bloco ORDER BY a.id_ambiente ASC";
 
         $result = $conn->query($sql);
         $ambientes = [];
@@ -81,6 +81,7 @@ switch($method){
             }else{
                 echo json_encode(["success" => false, "message"=> 
                 "Erro ao excluir: pode haver dados vinculados a este ambiente."]);
+            }
                 break;
 
              default:
@@ -88,5 +89,5 @@ switch($method){
             break;
             }
 
-}
+
 ?>

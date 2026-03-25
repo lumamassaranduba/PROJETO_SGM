@@ -33,34 +33,77 @@
 
 <div class="card border-0 shadow-sm rounded-4 overflow-hidden p-4">
         <div class="table-responsive">
-            <table class="table">
-  <thead>
-    <tr>
-      <th scope="col">ID</th>
-      <th scope="col">BLOCO</th>
-      <th scope="col">AMBIENTE</th>
-      <th scope="col">GERENCIAR</th>
-      <th scope="col">DELETAR</th>
-    </tr>
-  </thead>
-  <tbody class="table-group-divider">
-    <tr>
-      <th scope="row">1</th>
-      <td>Administrativo</td>
-      <td>Recepção</td>
-      <td><a href="./gestor_atualizar__ambientes.php"><button class="btn btn-sm px-3 rounded-pill bg-warning text-white shadow-sm"
-       style="font-size: 12px; font-weight: 600;"> <i class="bi bi-upload"></i> ATUALIZAR</button></a></td>
-   <td><a href="#"><button class="btn btn-sm px-3 rounded-pill text-white shadow-sm"
-       style="background-color: #990202; font-size: 12px; font-weight: 600;" onclick="alert('Deletado!')"
-> <i class="bi bi-trash3"></i> DELETAR</button></a></td>
-    </tr>
- </tr>
-     
-  </tbody>
-</table>
+            <table class="table" id="tabelaGeral"></table>
         </div>
     </div>
 </div>
 
-
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+async function carregarAmbientes() {
+    const res = await fetch(`api/api_ambientes.php`);
+    const ambientes = await res.json();
+    const tabela = document.getElementById('tabelaGeral');
+
+    tabela.innerHTML = `
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>BLOCO</th>
+                <th>AMBIENTE</th>
+                <th>GERENCIAR</th>
+                <th>DELETAR</th>
+            </tr>
+        </thead>
+        <tbody>
+            ${ambientes.data.map(a => `
+                <tr>
+                    <td>${a.id_ambiente}</td>
+                    <td>${a.nome_bloco}</td>
+                    <td>${a.nome}</td>
+
+                    <td>
+                        <a href="./gestor_atualizar__ambientes.php?id=${a.id_ambiente}">
+                            <button class="btn btn-sm px-3 rounded-pill bg-warning text-white shadow-sm"
+                            style="font-size: 12px; font-weight: 600;">
+                                <i class="bi bi-upload"></i> ATUALIZAR
+                            </button>
+                        </a>
+                    </td>
+
+                    <td>
+                        <button class="btn btn-sm px-3 rounded-pill text-white shadow-sm"
+                        style="background-color: #990202; font-size: 12px; font-weight: 600;"
+                        onclick="deletarAmbiente(${a.id_ambiente})">
+                            <i class="bi bi-trash3"></i> DELETAR
+                        </button>
+                    </td>
+                </tr>
+            `).join('')}
+        </tbody>
+    `;
+}
+
+function deletarAmbiente(id) {
+    if (!confirm("Tem certeza que deseja deletar?")) return;
+
+    fetch('api/api_ambientes.php', {
+        method: 'DELETE',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ id_ambiente: id })
+    })
+    .then(res => res.json())
+    .then(data => {
+        alert(data.message);
+        carregarAmbientes();
+    })
+    .catch(err => console.error(err));
+}
+
+carregarAmbientes();
+</script>
+</body>
+</html>

@@ -1,20 +1,20 @@
 <?php
 session_start();
 
+// Conexão com banco
 require_once '../config/database.php';
 
-// Apenas gestor
+// Apenas gestores podem acessar
 if (!isset($_SESSION['user_id']) || $_SESSION['user_perfil'] !== 'gestor') {
 
-    header("Location: ../login.php");
+    header("Location: /2025/PROJETO_SGM/login.php");
     exit;
 }
 
+// Verifica se veio do formulário
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
-    // Recebe dados
-    $id = (int) $_POST['id_usuario'];
-
+    // Recebe os dados
     $nome = filter_input(
         INPUT_POST,
         'nome',
@@ -27,17 +27,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         FILTER_VALIDATE_EMAIL
     );
 
+    $senha = $_POST['senha'];
+
     $perfil = $_POST['perfil'];
 
-    $ativo = (int) $_POST['ativo'];
+    // Validação básica
+    if (!$nome || !$email || !$senha || !$perfil) {
 
-    // Validação
-    if (!$id || !$nome || !$email || !$perfil) {
+        echo "
+            <script>
+                alert('Preencha todos os campos!');
+                window.history.back();
+            </script>
+        ";
 
-        die("Preencha todos os campos.");
+        exit;
     }
 
-    // Perfis válidos
+    // Perfis permitidos
     $perfisPermitidos = [
         'gestor',
         'tecnico',
@@ -51,19 +58,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     try {
 
-        // Verifica email repetido
+        // Verifica se email já existe
         $check = $conn->prepare("
             SELECT id_usuario
             FROM usuarios
             WHERE email = ?
-            AND id_usuario != ?
         ");
 
-        $check->bind_param(
-            "si",
-            $email,
-            $id
-        );
+        $check->bind_param("s", $email);
 
         $check->execute();
 
@@ -73,7 +75,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             echo "
                 <script>
-                    alert('Este e-mail já pertence a outro usuário!');
+                    alert('Este e-mail já está cadastrado!');
                     window.history.back();
                 </script>
             ";
@@ -81,44 +83,44 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             exit;
         }
 
-        // Atualiza usuário
+        // Criptografa senha
+        $senhaHash = password_hash(
+            $senha,
+            PASSWORD_DEFAULT
+        );
+
+        // Inserção
         $sql = "
-            UPDATE usuarios
-            SET
-                nome = ?,
-                email = ?,
-                perfil = ?,
-                ativo = ?
-            WHERE id_usuario = ?
+            INSERT INTO usuarios
+            (nome, email, senha_hash, perfil)
+            VALUES (?, ?, ?, ?)
         ";
 
         $stmt = $conn->prepare($sql);
 
         $stmt->bind_param(
-            "sssii",
+            "ssss",
             $nome,
             $email,
-            $perfil,
-            $ativo,
-            $id
+            $senhaHash,
+            $perfil
         );
 
-        // Executa atualização
+        // Executa
         if ($stmt->execute()) {
 
-            header("Location: ../gestor_usuarios.php?msg=editado");
-
+            header("Location: /2025/PROJETO_SGM/gestor_usuarios.php?msg=sucesso");
             exit;
 
         } else {
 
-            echo "Erro ao atualizar usuário.";
+            echo "Erro ao cadastrar usuário.";
 
         }
 
     } catch (Exception $e) {
 
-        die("Erro: " . $e->getMessage());
+        die("Erro no sistema: " . $e->getMessage());
 
     }
 

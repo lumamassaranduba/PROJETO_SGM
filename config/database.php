@@ -3,7 +3,7 @@
 $host = "localhost";
 $user = "root";
 $pass = "";
-$db   = "sgm_db";
+$db   = "sgm_db_luma";
 
 $conn = new mysqli($host, $user, $pass, $db);
 

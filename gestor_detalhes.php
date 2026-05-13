@@ -1,5 +1,8 @@
 <?php
 session_start();
+// Ajustei apenas o caminho do banco para evitar o erro de pasta que deu antes
+require_once 'config/database.php'; 
+
 if (!isset($_SESSION['user_id']) || $_SESSION['user_perfil'] !== 'gestor') {
     header("Location: login.php");
     exit;
@@ -34,7 +37,6 @@ $id = (int)($_GET['id'] ?? 0);
 
 <div class="container pb-5">
     <div class="row g-4">
-        <!-- Detalhes -->
         <div class="col-md-7">
             <div class="card shadow-sm mb-4">
                 <div class="card-header text-white" style="background:#990202;">Dados da Solicitação</div>
@@ -44,37 +46,11 @@ $id = (int)($_GET['id'] ?? 0);
             </div>
         </div>
 
-        <!-- Atribuição -->
         <div class="col-md-5">
-            <div class="card shadow-sm">
+            <div class="card shadow-sm" id="cardAcaoDireita">
                 <div class="card-header text-white" style="background:#990202;">Triagem e Atribuição</div>
-                <div class="card-body">
-                    <form id="formAtribuir">
-                        <div class="mb-3">
-                            <label class="info-label">Técnico</label>
-                            <select id="selectTecnico" class="form-select" required>
-                                <option value="">Carregando técnicos...</option>
-                            </select>
-                        </div>
-                        <div class="row g-2">
-                            <div class="col-6">
-                                <label class="info-label">Prioridade</label>
-                                <select id="prioridade" class="form-select">
-                                    <option value="baixa">Baixa</option>
-                                    <option value="media">Média</option>
-                                    <option value="alta">Alta</option>
-                                    <option value="urgente">Urgente</option>
-                                </select>
-                            </div>
-                            <div class="col-6">
-                                <label class="info-label">Data Prevista</label>
-                                <input type="date" id="data_prevista" class="form-control" required>
-                            </div>
-                        </div>
-                        <button type="submit" id="btnConfirmar" class="btn w-100 text-white fw-bold mt-3" style="background:#990202;">
-                            Confirmar Atribuição
-                        </button>
-                    </form>
+                <div class="card-body" id="conteudoAcao">
+                    <div class="text-center">Carregando opções...</div>
                 </div>
             </div>
         </div>
@@ -82,6 +58,18 @@ $id = (int)($_GET['id'] ?? 0);
 </div>
 
 <script>
+// FUNÇÃO PARA FECHAR OU REABRIR (A que o professor pediu)
+async function finalizarChamado(acao) {
+    if(!confirm("Deseja " + acao + " este chamado?")) return;
+    const res = await fetch('api/gestor_acoes.php', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ id_chamado: CHAMADO_ID, acao: acao })
+    });
+    const data = await res.json();
+    if(data.success) window.location.href = 'gestor_chamados.php';
+}
+
 async function carregarDados() {
     try {
         const [resTec, resChamado] = await Promise.all([
@@ -92,14 +80,7 @@ async function carregarDados() {
         const tecnicos = await resTec.json();
         const c = await resChamado.json();
 
-        // Preencher Técnicos
-        const select = document.getElementById('selectTecnico');
-        select.innerHTML = '<option value="">Selecione um técnico</option>';
-        tecnicos.forEach(t => {
-            select.innerHTML += `<option value="${t.id_usuario}">${t.nome}</option>`;
-        });
-
-        // Preencher Detalhes
+        // 1. Preencher Detalhes (SEU CODIGO ORIGINAL)
         document.getElementById('detalhesChamado').innerHTML = `
             <div class="mb-2"><span class="badge bg-primary">${c.status.toUpperCase()}</span></div>
             <div class="mb-2"><div class="info-label">Local</div><div class="info-value">${c.bloco_nome} - ${c.ambiente_nome}</div></div>
@@ -107,53 +88,69 @@ async function carregarDados() {
             <div class="mb-2"><div class="info-label">Descrição</div><div class="info-value bg-light p-3 rounded">${c.descricao_problema}</div></div>
         `;
 
-        if (c.id_tecnico) select.value = c.id_tecnico;
-        if (c.prioridade) document.getElementById('prioridade').value = c.prioridade;
-        if (c.data_previsao_conclusao) document.getElementById('data_prevista').value = c.data_previsao_conclusao;
+        // 2. LÓGICA DE DECISÃO (FORMULÁRIO OU BOTÕES)
+        const divAcao = document.getElementById('conteudoAcao');
 
-    } catch (err) {
-        console.error(err);
-        document.getElementById('detalhesChamado').innerHTML = "Erro ao carregar dados.";
-    }
-}
-
-document.getElementById('formAtribuir').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const btn = document.getElementById('btnConfirmar');
-    btn.disabled = true;
-    btn.innerText = "Processando...";
-
-    const payload = {
-        id_chamado: CHAMADO_ID,
-        id_tecnico: parseInt(document.getElementById('selectTecnico').value),
-        prioridade: document.getElementById('prioridade').value,
-        data_prevista: document.getElementById('data_prevista').value
-    };
-
-    try {
-        const res = await fetch('api/atribuir_chamado.php', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify(payload)
-        });
-
-        const data = await res.json();
-
-        if (data.success) {
-            alert("Sucesso!");
-            window.location.href = 'gestor_chamados.php';
+        if (c.status === 'concluido') {
+            // MOSTRA O QUE O PROFESSOR PEDIU
+            document.querySelector('#cardAcaoDireita .card-header').innerText = "Validar Finalização";
+            divAcao.innerHTML = `
+                <p class="text-muted small">O técnico concluiu o serviço. Deseja fechar ou reabrir?</p>
+                <button onclick="finalizarChamado('fechar')" class="btn btn-success w-100 mb-2 fw-bold">Fechar Chamado</button>
+                <button onclick="finalizarChamado('reabrir')" class="btn btn-outline-danger w-100 fw-bold">Reabrir Chamado</button>
+            `;
         } else {
-            alert("Erro: " + data.message);
-            btn.disabled = false;
-            btn.innerText = "Confirmar Atribuição";
+            // MOSTRA O SEU FORMULÁRIO ORIGINAL
+            let options = tecnicos.map(t => `<option value="${t.id_usuario}">${t.nome}</option>`).join('');
+            divAcao.innerHTML = `
+                <form id="formAtribuir">
+                    <div class="mb-3">
+                        <label class="info-label">Técnico</label>
+                        <select id="selectTecnico" class="form-select" required>
+                            <option value="">Selecione...</option>
+                            ${options}
+                        </select>
+                    </div>
+                    <div class="row g-2">
+                        <div class="col-6">
+                            <label class="info-label">Prioridade</label>
+                            <select id="prioridade" class="form-select">
+                                <option value="baixa">Baixa</option>
+                                <option value="media">Média</option>
+                                <option value="alta">Alta</option>
+                                <option value="urgente">Urgente</option>
+                            </select>
+                        </div>
+                        <div class="col-6">
+                            <label class="info-label">Data Prevista</label>
+                            <input type="date" id="data_prevista" class="form-control" required>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn w-100 text-white fw-bold mt-3" style="background:#990202;">Confirmar Atribuição</button>
+                </form>
+            `;
+            
+            // Re-adicionar o evento de submit que estava no seu original
+            document.getElementById('formAtribuir').onsubmit = async (e) => {
+                e.preventDefault();
+                const payload = {
+                    id_chamado: CHAMADO_ID,
+                    id_tecnico: document.getElementById('selectTecnico').value,
+                    prioridade: document.getElementById('prioridade').value,
+                    data_prevista: document.getElementById('data_prevista').value
+                };
+                const res = await fetch('api/atribuir_chamado.php', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(payload)
+                });
+                const data = await res.json();
+                if(data.success) { alert("Sucesso!"); location.reload(); }
+            };
         }
-    } catch (err) {
-        console.error(err);
-        alert("Erro crítico na requisição. Verifique o console.");
-        btn.disabled = false;
-        btn.innerText = "Confirmar Atribuição";
-    }
-});
+
+    } catch (err) { console.error(err); }
+}
 
 carregarDados();
 </script>

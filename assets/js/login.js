@@ -12,20 +12,23 @@ document.getElementById('formLogin').addEventListener('submit', async (e) => {
             body: JSON.stringify({ email: email, senha: senha })
         });
 
-        // Debug: Veja o que o PHP está retornando no console do navegador (F12)
-        const textoRetorno = await response.text();
-        console.log("Resposta do Servidor:", textoRetorno);
-        
-        const result = JSON.parse(textoRetorno);
+        const result = await response.json();
 
         if (result.success) {
-            // Se o login funcionar, manda para o dashboard que criamos
-            window.location.href = 'dashboard.php';
+            // REDIRECIONAMENTO CORRIGIDO POR PERFIL
+            if (result.perfil === 'gestor') {
+                window.location.href = 'gestor_dashboard.php';
+            } else if (result.perfil === 'tecnico') {
+                window.location.href = 'tecnico_dashboard.php';
+            } else {
+                window.location.href = 'solicitante_dashboard.php';
+            }
         } else {
             msg.innerText = result.message;
+            msg.classList.add('text-danger');
         }
     } catch (error) {
         console.error("Erro na requisição:", error);
-        msg.innerText = "Erro ao conectar com o servidor.";
+        if(msg) msg.innerText = "Erro ao conectar com o servidor.";
     }
 });

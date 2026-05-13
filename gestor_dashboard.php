@@ -42,7 +42,7 @@
                     </div>
                     <div>
                         <h6 class="text-uppercase mb-0 small opacity-75 fw-bold">Novas</h6>
-                        <h2 class="fw-bold m-0">0</h2>
+                        <h2 class="fw-bold m-0" id="count-novos">--</h2>
                     </div>
                 </div>
             </div>
@@ -56,7 +56,7 @@
                     </div>
                     <div>
                         <h6 class="text-uppercase mb-0 small opacity-75 fw-bold">Atendimento</h6>
-                        <h2 class="fw-bold m-0">0</h2>
+                        <h2 class="fw-bold m-0" id="count-atendimento">--</h2>
                     </div>
                 </div>
             </div>
@@ -70,7 +70,7 @@
                     </div>
                     <div>
                         <h6 class="text-uppercase mb-0 small opacity-75 fw-bold">Críticos</h6>
-                        <h2 class="fw-bold m-0">0</h2>
+                        <h2 class="fw-bold m-0" id="count-criticos">--</h2>
                     </div>
                 </div>
             </div>
@@ -80,44 +80,75 @@
 
     <div class="row justify-content-center mt-5">
         <div class="col-auto">
-            <div class="bg-white p-2 rounded-pill shadow-sm border d-flex gap-2">
+            <div class="bg-white p-2 rounded-pill shadow-sm border d-flex gap-2 flex-wrap justify-content-center">
                 <a href="./gestor_chamados.php" class="btn btn-danger px-4 rounded-pill fw-bold shadow-sm" style="background-color: #990202; border: none;">
-                    <i class="bi bi-list-ul me-2"></i> Gerenciar todos os chamados.</a>
+                    <i class="bi bi-list-ul me-2"></i> Gerenciar todos os chamados
+                </a>
                 <a href="#" class="btn btn-light px-4 rounded-pill fw-bold text-secondary border" data-bs-toggle="modal" data-bs-target="#exampleModal">
-                    <i class="bi bi-geo-alt me-2"></i> Gerenciar locais.</a>
+                    <i class="bi bi-geo-alt me-2"></i> Gerenciar locais
+                </a>
                 <a href="./gestor_servicos.php" class="btn btn-danger px-4 rounded-pill fw-bold shadow-sm" style="background-color: #990202; border: none;">
-                    <i class="bi bi-wrench-adjustable-circle-fill"></i></i>   Gerenciar tipos de serviços.</a>
+                    <i class="bi bi-wrench-adjustable-circle-fill me-2"></i> Gerenciar tipos de serviços
+                </a>
                 <a href="./gestor_usuarios.php" class="btn btn-light px-4 rounded-pill fw-bold text-secondary border">
-                    <i class="bi bi-people"></i> Gerenciar usuários.</a>
+                    <i class="bi bi-people me-2"></i> Gerenciar usuários
+                </a>
             </div>
         </div>
     </div>
 
 </main>
 
-
-<!-- Modal -->
 <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
+  <div class="modal-dialog modal-sm">
+    <div class="modal-content border-0 shadow">
       <div class="modal-header">
-        <h1 class="modal-title fs-5" id="exampleModalLabel">Gerenciar locais</h1>
+        <h1 class="modal-title fs-6 fw-bold" id="exampleModalLabel">Gerenciar Locais</h1>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
-      <div class="modal-body">
-        Qual você deseja modificar?
-      </div>
-      <div class="modal-footer justify-content-center">
-        <a href="./gestor_blocos.php"><button type="button" class="btn text-light" style="background-color: #990202;" data-bs-dismiss="modal">Blocos</button></a>
-        <a href="./gestor_ambientes.php"><button type="button" class="btn text-light" style="background-color: #990202;">Ambientes</button></a>
+      <div class="modal-body text-center py-4">
+        <p class="text-muted">Qual categoria você deseja modificar?</p>
+        <div class="d-grid gap-2">
+            <a href="./gestor_blocos.php" class="btn text-white fw-bold" style="background-color: #990202;">Blocos</a>
+            <a href="./gestor_ambientes.php" class="btn text-white fw-bold" style="background-color: #990202;">Ambientes</a>
+        </div>
       </div>
     </div>
   </div>
 </div>
+
 <footer class="text-center mt-5 py-4 text-muted small">
     <p>&copy; 2026 SMG Gestão de Manutenção - Luma Massaranduba</p>
 </footer>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+async function carregarIndicadores() {
+    try {
+        const response = await fetch('api/dashboard_stats.php');
+        const resultado = await response.json();
+
+        if (resultado.success) {
+            document.getElementById('count-novos').innerText = resultado.dados.novos;
+            document.getElementById('count-atendimento').innerText = resultado.dados.atendimento;
+            document.getElementById('count-criticos').innerText = resultado.dados.criticos;
+        }
+    } catch (error) {
+        console.error("Erro ao buscar indicadores:", error);
+        // Em caso de erro, manter visualmente limpo ou mostrar 0
+        document.getElementById('count-novos').innerText = '0';
+        document.getElementById('count-atendimento').innerText = '0';
+        document.getElementById('count-criticos').innerText = '0';
+    }
+}
+
+// Inicializa a carga dos dados
+document.addEventListener('DOMContentLoaded', carregarIndicadores);
+
+// Opcional: Atualizar a cada 60 segundos automaticamente
+setInterval(carregarIndicadores, 60000);
+</script>
+
 </body>
 </html>

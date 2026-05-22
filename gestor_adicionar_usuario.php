@@ -15,60 +15,181 @@ if (!isset($_SESSION['user_id']) || $_SESSION['user_perfil'] !== 'gestor') {
     <title>SGM - Adicionar Usuário</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-    
     <style>
-        :root { --vinho-sgm: #990202; }
-        body { background-color: #f8f9fa; font-family: 'Inter', sans-serif; }
-        .navbar-custom { background-color: var(--vinho-sgm); }
-        .card-form { border: none; border-radius: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
-        .form-control, .form-select { border: 1px solid #dee2e6; padding: 0.75rem 1rem; border-radius: 10px; background-color: #fcfcfc; }
-        .form-control:focus { border-color: var(--vinho-sgm); box-shadow: 0 0 0 0.25rem rgba(153, 2, 2, 0.1); }
-        .btn-save { background-color: var(--vinho-sgm); color: white; border-radius: 50px; font-weight: 600; padding: 0.75rem; transition: 0.3s; border: none; }
-        .btn-save:hover { background-color: #7a0202; color: white; transform: translateY(-2px); }
-        .label-custom { font-size: 0.85rem; font-weight: 700; color: #495057; margin-bottom: 5px; text-transform: uppercase; }
-        .alert-info-password { font-size: 0.8rem; color: #6c757d; border-left: 3px solid var(--vinho-sgm); padding-left: 10px; }
+        /* Identidade Visual Padronizada SGM */
+        :root {
+            --vinho-dark: #7a0101;
+            --vinho-light: #990202;
+            --sgm-gold: #ffc107;
+        }
+        body { 
+            background-color: #f0f2f5; 
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; 
+        }
+        
+        /* Navbar Padrão SGM ADMIN */
+        .navbar { 
+            background: linear-gradient(135deg, var(--vinho-dark) 0%, var(--vinho-light) 100%); 
+            border-bottom: 4px solid var(--sgm-gold); 
+            height: 65px; 
+        }
+
+        /* Botão Voltar Destacado (Mobile-First) */
+        .btn-voltar-container {
+            margin-bottom: 1rem;
+        }
+        .btn-voltar-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: #6c757d;
+            font-weight: 600;
+            font-size: 0.9rem;
+            text-decoration: none;
+            padding: 6px 16px;
+            background-color: #ffffff;
+            border: 1px solid #dee2e6;
+            border-radius: 50px;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+        }
+        .btn-voltar-link:hover {
+            color: var(--vinho-light);
+            border-color: var(--vinho-light);
+            background-color: rgba(153, 2, 2, 0.03);
+            transform: translateX(-3px);
+        }
+
+        /* Card do Formulário Adaptável com Detalhe da Nav */
+        .form-card { 
+            border: none; 
+            border-radius: 16px; 
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05); 
+            background: white;
+            padding: 2rem 1.5rem;
+            border-top: 4px solid var(--sgm-gold);
+        }
+        
+        .form-label { 
+            font-weight: 700; 
+            color: #2d3436; 
+            font-size: 0.85rem; 
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .form-control, .form-select { 
+            border-color: #dee2e6; 
+            border-radius: 10px; 
+            padding: 12px;
+            transition: all 0.2s;
+        }
+        
+        .form-control:focus, .form-select:focus { 
+            border-color: var(--vinho-light); 
+            box-shadow: 0 0 0 0.25rem rgba(153, 2, 2, 0.1); 
+        }
+
+        /* Botões Mobile-Friendly */
+        .btn-submit { 
+            background-color: var(--vinho-light); 
+            border: none; 
+            font-weight: 700; 
+            color: white; 
+            border-radius: 50px; 
+            transition: 0.2s; 
+            padding: 14px;
+        }
+        .btn-submit:hover { 
+            background-color: var(--vinho-dark); 
+            transform: translateY(-1px); 
+        }
+        
+        .btn-cancel {
+            border-radius: 50px;
+            padding: 10px;
+            font-weight: 600;
+        }
+
+        /* Alerta de senha customizado */
+        .alert-info-password { 
+            font-size: 0.8rem; 
+            color: #57606f; 
+            border-left: 3px solid var(--sgm-gold); 
+            padding-left: 10px; 
+            background-color: #f8f9fa;
+            padding-top: 6px;
+            padding-bottom: 6px;
+            border-radius: 0 6px 6px 0;
+        }
+
+        /* Ícone de Destaque */
+        .icon-circle {
+            width: 60px;
+            height: 60px;
+            background-color: rgba(153, 2, 2, 0.08);
+            color: var(--vinho-light);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            font-size: 1.5rem;
+        }
+
+        @media (max-width: 576px) {
+            .btn-voltar-container {
+                text-align: center;
+            }
+        }
     </style>
 </head>
 <body>
 
 <header>
-    <nav class="navbar navbar-expand-lg navbar-dark navbar-custom shadow-sm mb-5">
-        <div class="container py-1">
-            <a href="gestor_usuarios.php" class="btn btn-link text-light text-decoration-none me-2">
-                <i class="bi bi-arrow-left-circle-fill fs-4"></i>
-            </a>
-            <a class="navbar-brand fw-bold" href="gestor_dashboard.php">SGM Admin</a>
-            <div class="navbar-nav ms-auto">
-                <span class="nav-link active small">Novo Cadastro</span>
+    <nav class="navbar navbar-dark shadow-sm mb-4 px-4">
+        <div class="container-fluid d-flex justify-content-between align-items-center">
+            <div class="d-flex align-items-center">
+                <i class="bi bi-shield-lock-fill text-warning fs-3 me-2"></i>
+                <a class="navbar-brand fw-bold mb-0 text-white" href="gestor_dashboard.php">SGM ADMIN</a>
             </div>
+            <a href="api/logout.php" class="btn btn-outline-light btn-sm rounded-pill px-3 fw-semibold">Sair</a>
         </div>
     </nav>
 </header>
 
-<main class="container">
+<main class="container px-3">
     <div class="row justify-content-center">
-        <div class="col-lg-5 col-md-7">
+        <div class="col-12 col-sm-10 col-md-7 col-lg-5">
             
-            <div class="text-center mb-4">
-                <h3 class="fw-bold">Criar Novo Usuário</h3>
-                <p class="text-muted small">Preencha os dados abaixo para liberar o acesso ao sistema.</p>
+            <div class="btn-voltar-container">
+                <a href="gestor_usuarios.php" class="btn-voltar-link">
+                    <i class="bi bi-arrow-left"></i> Voltar para Usuários
+                </a>
             </div>
 
-            <div class="card card-form p-4">
-               <form action="api/api_adicionar_usuario.php" method="POST">
+            <div class="form-card">
+                <div class="text-center mb-4">
+                    <div class="icon-circle mb-2">
+                        <i class="bi bi-person-plus-fill"></i>
+                    </div>
+                    <h4 class="fw-bold text-dark mb-1">Criar Novo Usuário</h4>
+                    <p class="text-muted small">Preencha os dados abaixo para liberar o acesso ao sistema.</p>
+                </div>
+
+                <form action="api/api_adicionar_usuario.php" method="POST">
                     
                     <div class="mb-3">
-                        <label class="label-custom">Nome Completo</label>
+                        <label class="form-label">Nome Completo</label>
                         <input type="text" name="nome" class="form-control" placeholder="Ex: João Silva" required>
                     </div>
 
                     <div class="mb-3">
-                        <label class="label-custom">E-mail Corporativo</label>
+                        <label class="form-label">E-mail Corporativo</label>
                         <input type="email" name="email" class="form-control" placeholder="joao@empresa.com" required>
                     </div>
 
                     <div class="mb-3">
-                        <label class="label-custom">Senha Inicial</label>
+                        <label class="form-label">Senha Inicial</label>
                         <input type="password" name="senha" class="form-control" placeholder="••••••••" required>
                         <div class="alert-info-password mt-2">
                             Defina uma senha temporária. O usuário poderá alterá-la depois.
@@ -76,27 +197,27 @@ if (!isset($_SESSION['user_id']) || $_SESSION['user_perfil'] !== 'gestor') {
                     </div>
 
                     <div class="mb-4">
-                        <label class="label-custom">Perfil de Acesso</label>
+                        <label class="form-label">Perfil de Acesso</label>
                         <select name="perfil" class="form-select" required>
                             <option value="" selected disabled>Selecione um perfil...</option>
-                            <option value="solicitante">Solicitante </option>
-                            <option value="tecnico">Técnico </option>
+                            <option value="solicitante">Solicitante</option>
+                            <option value="tecnico">Técnico</option>
                             <option value="gestor">Gestor</option>
                         </select>
                     </div>
 
-                    <button type="submit" class="btn btn-save w-100 shadow-sm">
-                        <i class="bi bi-person-plus-fill me-2"></i>CADASTRAR USUÁRIO
-                    </button>
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-submit shadow-sm text-white">
+                            CADASTRAR USUÁRIO
+                        </button>
+                        <a href="gestor_usuarios.php" class="btn btn-light btn-cancel text-muted border">
+                            Cancelar
+                        </a>
+                    </div>
                 </form>
             </div>
-
-            <div class="text-center mt-4 mb-5">
-                <a href="gestor_usuarios.php" class="text-decoration-none text-secondary small">
-                    Cancelar e voltar para a lista
-                </a>
-            </div>
-
+            
+            <p class="text-center mt-4 mb-5 text-muted small">&copy; 2026 SGM Gestão de Manutenção</p>
         </div>
     </div>
 </main>

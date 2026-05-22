@@ -28,49 +28,157 @@ if (!$usuario) {
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     
     <style>
-        :root { --vinho-sgm: #990202; }
-        body { background-color: #f8f9fa; font-family: 'Inter', system-ui, -apple-system, sans-serif; }
-        .navbar-custom { background-color: var(--vinho-sgm); }
-        .card-detalhes { border: none; border-radius: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
-        .info-label { font-size: 0.75rem; text-uppercase; font-weight: 700; color: #6c757d; letter-spacing: 0.5px; }
-        .info-value { font-weight: 600; color: #2d3436; margin-bottom: 0; }
-        .btn-vinho { background-color: var(--vinho-sgm); color: white; border-radius: 50px; font-weight: 600; transition: 0.3s; }
-        .btn-vinho:hover { background-color: #7a0202; color: white; transform: translateY(-2px); }
-        .badge-perfil { font-size: 0.85rem; padding: 0.5em 1em; border-radius: 50px; }
+        /* Identidade Visual Padronizada SGM */
+        :root {
+            --vinho-dark: #7a0101;
+            --vinho-light: #990202;
+            --sgm-gold: #ffc107;
+        }
+        body { 
+            background-color: #f0f2f5; 
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; 
+        }
+        
+        /* Navbar Padrão SGM ADMIN */
+        .navbar { 
+            background: linear-gradient(135deg, var(--vinho-dark) 0%, var(--vinho-light) 100%); 
+            border-bottom: 4px solid var(--sgm-gold); 
+            height: 65px; 
+        }
+
+        /* Botão Voltar Destacado (Mobile-First) */
+        .btn-voltar-container {
+            margin-bottom: 1rem;
+        }
+        .btn-voltar-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: #6c757d;
+            font-weight: 600;
+            font-size: 0.9rem;
+            text-decoration: none;
+            padding: 6px 16px;
+            background-color: #ffffff;
+            border: 1px solid #dee2e6;
+            border-radius: 50px;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+        }
+        .btn-voltar-link:hover {
+            color: var(--vinho-light);
+            border-color: var(--vinho-light);
+            background-color: rgba(153, 2, 2, 0.03);
+            transform: translateX(-3px);
+        }
+
+        /* Card de Detalhes com a Borda da Nav */
+        .card-detalhes { 
+            border: none; 
+            border-radius: 16px; 
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05); 
+            background: white;
+            padding: 2rem 1.5rem;
+            border-top: 4px solid var(--sgm-gold);
+        }
+        
+        .info-label { 
+            font-size: 0.75rem; 
+            text-transform: uppercase; 
+            font-weight: 700; 
+            color: #2d3436; 
+            letter-spacing: 0.5px; 
+        }
+        .info-value { 
+            font-weight: 600; 
+            color: #57606f; 
+            margin-bottom: 0; 
+            font-size: 1.05rem;
+        }
+        
+        /* Badges e Avatares */
+        .badge-perfil { 
+            font-size: 0.8rem; 
+            font-weight: 700;
+            padding: 6px 14px; 
+            border-radius: 50px; 
+        }
+        
+        .avatar-circle {
+            width: 75px;
+            height: 75px;
+            background-color: #f8f9fa;
+            color: #a4b0be;
+            border: 1px solid #edf2f7;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            font-size: 2.2rem;
+        }
+
+        /* Botões Mobile-Friendly */
+        .btn-action-edit {
+            border-radius: 50px;
+            padding: 12px;
+            font-weight: 700;
+            font-size: 0.9rem;
+        }
+        .btn-action-delete {
+            border-radius: 50px;
+            padding: 12px;
+            font-weight: 700;
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 576px) {
+            .btn-voltar-container {
+                text-align: center;
+            }
+            .header-detalhes {
+                flex-direction: column;
+                gap: 10px;
+                text-align: center;
+            }
+        }
     </style>
 </head>
 <body>
 
 <header>
-    <nav class="navbar navbar-expand-lg navbar-dark navbar-custom shadow-sm mb-4">
-        <div class="container py-1">
-            <a href="gestor_usuarios.php" class="btn btn-link text-light text-decoration-none me-2">
-                <i class="bi bi-arrow-left-circle-fill fs-4"></i>
-            </a>
-            <a class="navbar-brand fw-bold" href="gestor_dashboard.php">SGM Admin</a>
-            <div class="navbar-nav ms-auto">
-                <a href="api/logout.php" class="btn btn-outline-light btn-sm rounded-pill px-3">Sair</a>
+    <nav class="navbar navbar-dark shadow-sm mb-4 px-4">
+        <div class="container-fluid d-flex justify-content-between align-items-center">
+            <div class="d-flex align-items-center">
+                <i class="bi bi-shield-lock-fill text-warning fs-3 me-2"></i>
+                <a class="navbar-brand fw-bold mb-0 text-white" href="gestor_dashboard.php">SGM ADMIN</a>
             </div>
+            <a href="api/logout.php" class="btn btn-outline-light btn-sm rounded-pill px-3 fw-semibold">Sair</a>
         </div>
     </nav>
 </header>
 
-<main class="container">
+<main class="container px-3">
     <div class="row justify-content-center">
-        <div class="col-lg-6 col-md-8">
+        <div class="col-12 col-sm-10 col-md-8 col-lg-6">
             
-            <div class="d-flex justify-content-between align-items-center mb-4">
+            <div class="btn-voltar-container">
+                <a href="gestor_usuarios.php" class="btn-voltar-link">
+                    <i class="bi bi-arrow-left"></i> Voltar para Usuários
+                </a>
+            </div>
+
+            <div class="d-flex justify-content-between align-items-center mb-4 header-detalhes">
                 <h3 class="fw-bold text-dark m-0">Perfil do Usuário</h3>
-                <span class="badge <?= $usuario['ativo'] == 1 ? 'bg-success-subtle text-success' : 'bg-danger-subtle text-danger' ?> border px-3 py-2 rounded-pill">
+                <span class="badge <?= $usuario['ativo'] == 1 ? 'bg-success bg-opacity-10 text-success border-success border-opacity-25' : 'bg-danger bg-opacity-10 text-danger border-danger border-opacity-25' ?> border px-3 py-2 rounded-pill fw-bold">
                     <i class="bi bi-circle-fill me-1" style="font-size: 8px;"></i>
                     <?= $usuario['ativo'] == 1 ? 'ATIVO' : 'INATIVO' ?>
                 </span>
             </div>
 
-            <div class="card card-detalhes p-4 mb-4">
+            <div class="card card-detalhes mb-5">
                 <div class="text-center mb-4">
-                    <div class="d-inline-flex align-items-center justify-content-center bg-light rounded-circle shadow-sm" style="width: 80px; height: 80px;">
-                        <i class="bi bi-person-fill text-secondary" style="font-size: 2.5rem;"></i>
+                    <div class="avatar-circle shadow-sm">
+                        <i class="bi bi-person"></i>
                     </div>
                 </div>
 
@@ -85,16 +193,16 @@ if (!$usuario) {
                         <p class="info-value"><?= htmlspecialchars($usuario['email']) ?></p>
                     </div>
 
-                    <div class="col-md-6 border-bottom pb-2">
+                    <div class="col-6 border-bottom pb-2">
                         <label class="info-label">Perfil de Sistema</label>
-                        <p class="mt-1">
-                            <span class="badge bg-secondary-subtle text-secondary border badge-perfil">
-                                <?= strtoupper($usuario['perfil']) ?>
+                        <div class="mt-1">
+                            <span class="badge bg-secondary bg-opacity-10 text-secondary border border-secondary border-opacity-25 badge-perfil">
+                                <?= strtoupper(htmlspecialchars($usuario['perfil'])) ?>
                             </span>
-                        </p>
+                        </div>
                     </div>
 
-                    <div class="col-md-6 border-bottom pb-2">
+                    <div class="col-6 border-bottom pb-2">
                         <label class="info-label">ID Identificador</label>
                         <p class="info-value">#<?= $usuario['id_usuario'] ?></p>
                     </div>
@@ -102,27 +210,18 @@ if (!$usuario) {
 
                 <div class="row mt-4 pt-2 g-2">
                     <div class="col-6">
-                        <a href="gestor_atualizar_usuarios.php?id=<?= $usuario['id_usuario'] ?>" class="btn btn-warning w-100 rounded-pill fw-bold text-dark shadow-sm">
+                        <a href="gestor_atualizar_usuarios.php?id=<?= $usuario['id_usuario'] ?>" class="btn btn-warning btn-action-edit w-100 text-dark shadow-sm">
                             <i class="bi bi-pencil-square me-1"></i> EDITAR
                         </a>
                     </div>
                     <div class="col-6">
                         <a href="api/api_deletar_usuarios.php?id=<?= $usuario['id_usuario'] ?>"
-   class="btn btn-outline-danger w-100 rounded-pill fw-bold shadow-sm"
-   onclick="return confirm('ATENÇÃO: Deseja realmente excluir este usuário?')">
-
-    <i class="bi bi-trash me-1"></i>
-    EXCLUIR
-
-</a>
+                           class="btn btn-outline-danger btn-action-delete w-100 shadow-sm"
+                           onclick="return confirm('ATENÇÃO: Deseja realmente excluir este usuário?')">
+                            <i class="bi bi-trash me-1"></i> EXCLUIR
+                        </a>
                     </div>
                 </div>
-            </div>
-
-            <div class="text-center">
-                <a href="gestor_usuarios.php" class="text-decoration-none text-secondary small fw-bold">
-                    <i class="bi bi-chevron-left"></i> VOLTAR PARA A LISTA
-                </a>
             </div>
 
         </div>

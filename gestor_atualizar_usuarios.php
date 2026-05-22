@@ -41,64 +41,125 @@ if (!$usuario) {
     <title>SGM - Editar Usuário</title>
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-
-    <link rel="stylesheet"
-        href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 
     <style>
+        /* Identidade Visual Padronizada SGM */
         :root {
-            --vinho-sgm: #990202;
+            --vinho-dark: #7a0101;
+            --vinho-light: #990202;
+            --sgm-gold: #ffc107;
         }
 
         body {
-            background-color: #f8f9fa;
-            font-family: 'Inter', sans-serif;
+            background-color: #f0f2f5;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
         }
 
-        .navbar-custom {
-            background-color: var(--vinho-sgm);
+        /* Navbar Padrão SGM ADMIN */
+        .navbar { 
+            background: linear-gradient(135deg, var(--vinho-dark) 0%, var(--vinho-light) 100%); 
+            border-bottom: 4px solid var(--sgm-gold); 
+            height: 65px; 
         }
 
-        .card-form {
+        /* Botão Voltar Destacado (Mobile-First) */
+        .btn-voltar-container {
+            margin-bottom: 1rem;
+        }
+        .btn-voltar-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: #6c757d;
+            font-weight: 600;
+            font-size: 0.9rem;
+            text-decoration: none;
+            padding: 6px 16px;
+            background-color: #ffffff;
+            border: 1px solid #dee2e6;
+            border-radius: 50px;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+        }
+        .btn-voltar-link:hover {
+            color: var(--vinho-light);
+            border-color: var(--vinho-light);
+            background-color: rgba(153, 2, 2, 0.03);
+            transform: translateX(-3px);
+        }
+
+        /* Card do Formulário com Detalhe Superior */
+        .form-card {
             border: none;
-            border-radius: 15px;
+            border-radius: 16px;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            background: white;
+            padding: 2rem 1.5rem;
+            border-top: 4px solid var(--sgm-gold);
+        }
+
+        .form-label {
+            font-weight: 700;
+            color: #2d3436;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
         .form-control,
         .form-select {
-            border: 1px solid #dee2e6;
-            padding: 0.75rem 1rem;
+            border-color: #dee2e6;
             border-radius: 10px;
-            background-color: #fcfcfc;
+            padding: 12px;
+            transition: all 0.2s;
         }
 
-        .form-control:focus {
-            border-color: var(--vinho-sgm);
+        .form-control:focus,
+        .form-select:focus {
+            border-color: var(--vinho-light);
             box-shadow: 0 0 0 0.25rem rgba(153, 2, 2, 0.1);
         }
 
-        .btn-save {
-            background-color: var(--vinho-sgm);
+        /* Botões Adaptados para Mobile */
+        .btn-submit {
+            background-color: var(--vinho-light);
+            border: none;
+            font-weight: 700;
             color: white;
             border-radius: 50px;
+            transition: 0.2s;
+            padding: 14px;
+        }
+
+        .btn-submit:hover {
+            background-color: var(--vinho-dark);
+            transform: translateY(-1px);
+        }
+
+        .btn-cancel {
+            border-radius: 50px;
+            padding: 10px;
             font-weight: 600;
-            padding: 0.75rem;
-            transition: 0.3s;
         }
 
-        .btn-save:hover {
-            background-color: #7a0202;
-            color: white;
-            transform: translateY(-2px);
+        /* Ícone Circular de Destaque */
+        .icon-circle {
+            width: 60px;
+            height: 60px;
+            background-color: rgba(153, 2, 2, 0.08);
+            color: var(--vinho-light);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            font-size: 1.5rem;
         }
 
-        .label-custom {
-            font-size: 0.85rem;
-            font-weight: 700;
-            color: #495057;
-            margin-bottom: 5px;
-            text-transform: uppercase;
+        @media (max-width: 576px) {
+            .btn-voltar-container {
+                text-align: center;
+            }
         }
     </style>
 </head>
@@ -106,183 +167,90 @@ if (!$usuario) {
 <body>
 
     <header>
-
-        <nav class="navbar navbar-expand-lg navbar-dark navbar-custom shadow-sm mb-5">
-
-            <div class="container py-1">
-
-                <a href="/2025/PROJETO_SGM/gestor_detalhes_usuarios.php?id=<?= $id ?>"
-                    class="btn btn-link text-light text-decoration-none me-2">
-
-                    <i class="bi bi-arrow-left-circle-fill fs-4"></i>
-
-                </a>
-
-                <a class="navbar-brand fw-bold"
-                    href="/2025/PROJETO_SGM/dashboard_gestor.php">
-
-                    SGM Admin
-
-                </a>
-
-                <div class="navbar-nav ms-auto">
-
-                    <span class="nav-link active small">
-                        Editar Perfil
-                    </span>
-
+        <nav class="navbar navbar-dark shadow-sm mb-4 px-4">
+            <div class="container-fluid d-flex justify-content-between align-items-center">
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-shield-lock-fill text-warning fs-3 me-2"></i>
+                    <a class="navbar-brand fw-bold mb-0 text-white" href="/2025/PROJETO_SGM/dashboard_gestor.php">SGM ADMIN</a>
                 </div>
-
+                <a href="/2025/PROJETO_SGM/api/logout.php" class="btn btn-outline-light btn-sm rounded-pill px-3 fw-semibold">Sair</a>
             </div>
-
         </nav>
-
     </header>
 
-    <main class="container">
+    <main class="container px-3">
 
         <div class="row justify-content-center">
 
-            <div class="col-lg-5 col-md-7">
+            <div class="col-12 col-sm-10 col-md-7 col-lg-5">
 
-                <div class="text-center mb-4">
-
-                    <h3 class="fw-bold">
-                        Alterar Dados
-                    </h3>
-
-                    <p class="text-muted small">
-                        ID do Usuário:
-                        #<?= $usuario['id_usuario'] ?>
-                    </p>
-
+                <div class="btn-voltar-container">
+                    <a href="/2025/PROJETO_SGM/gestor_detalhes_usuarios.php?id=<?= $id ?>" class="btn-voltar-link">
+                        <i class="bi bi-arrow-left"></i> Voltar aos Detalhes
+                    </a>
                 </div>
 
-                <div class="card card-form p-4">
+                <div class="form-card">
+                    
+                    <div class="text-center mb-4">
+                        <div class="icon-circle mb-2">
+                            <i class="bi bi-pencil-square"></i>
+                        </div>
+                        <h4 class="fw-bold text-dark mb-1">Alterar Dados</h4>
+                        <p class="text-muted small m-0">
+                            ID do Usuário: #<?= $usuario['id_usuario'] ?>
+                        </p>
+                    </div>
 
-                    <form action="/2025/PROJETO_SGM/api/api_atualizar_usuarios.php"
-                        method="POST">
+                    <form action="/2025/PROJETO_SGM/api/api_atualizar_usuarios.php" method="POST">
 
-                        <input type="hidden"
-                            name="id_usuario"
-                            value="<?= $usuario['id_usuario'] ?>">
+                        <input type="hidden" name="id_usuario" value="<?= $usuario['id_usuario'] ?>">
 
                         <div class="mb-3">
-
-                            <label class="label-custom">
-                                Nome Completo
-                            </label>
-
-                            <input type="text"
-                                name="nome"
-                                class="form-control"
-                                value="<?= htmlspecialchars($usuario['nome']) ?>"
-                                required>
-
+                            <label class="form-label">Nome Completo</label>
+                            <input type="text" name="nome" class="form-control" value="<?= htmlspecialchars($usuario['nome']) ?>" required>
                         </div>
 
                         <div class="mb-3">
-
-                            <label class="label-custom">
-                                E-mail
-                            </label>
-
-                            <input type="email"
-                                name="email"
-                                class="form-control"
-                                value="<?= htmlspecialchars($usuario['email']) ?>"
-                                required>
-
+                            <label class="form-label">E-mail</label>
+                            <input type="email" name="email" class="form-control" value="<?= htmlspecialchars($usuario['email']) ?>" required>
                         </div>
 
                         <div class="row">
 
                             <div class="col-md-6 mb-3">
-
-                                <label class="label-custom">
-                                    Perfil
-                                </label>
-
-                                <select name="perfil"
-                                    class="form-select">
-
-                                    <option value="solicitante"
-                                        <?= $usuario['perfil'] == 'solicitante' ? 'selected' : '' ?>>
-
-                                        Solicitante
-
-                                    </option>
-
-                                    <option value="tecnico"
-                                        <?= $usuario['perfil'] == 'tecnico' ? 'selected' : '' ?>>
-
-                                        Técnico
-
-                                    </option>
-
-                                    <option value="gestor"
-                                        <?= $usuario['perfil'] == 'gestor' ? 'selected' : '' ?>>
-
-                                        Gestor
-
-                                    </option>
-
+                                <label class="form-label">Perfil</label>
+                                <select name="perfil" class="form-select">
+                                    <option value="solicitante" <?= $usuario['perfil'] == 'solicitante' ? 'selected' : '' ?>>Solicitante</option>
+                                    <option value="tecnico" <?= $usuario['perfil'] == 'tecnico' ? 'selected' : '' ?>>Técnico</option>
+                                    <option value="gestor" <?= $usuario['perfil'] == 'gestor' ? 'selected' : '' ?>>Gestor</option>
                                 </select>
-
                             </div>
 
                             <div class="col-md-6 mb-4">
-
-                                <label class="label-custom">
-                                    Status
-                                </label>
-
-                                <select name="ativo"
-                                    class="form-select">
-
-                                    <option value="1"
-                                        <?= $usuario['ativo'] == 1 ? 'selected' : '' ?>>
-
-                                        Ativo
-
-                                    </option>
-
-                                    <option value="0"
-                                        <?= $usuario['ativo'] == 0 ? 'selected' : '' ?>>
-
-                                        Inativo
-
-                                    </option>
-
+                                <label class="form-label">Status</label>
+                                <select name="ativo" class="form-select">
+                                    <option value="1" <?= $usuario['ativo'] == 1 ? 'selected' : '' ?>>Ativo</option>
+                                    <option value="0" <?= $usuario['ativo'] == 0 ? 'selected' : '' ?>>Inativo</option>
                                 </select>
-
                             </div>
 
                         </div>
 
-                        <button type="submit"
-                            class="btn btn-save w-100 shadow-sm">
-
-                            <i class="bi bi-check-lg me-2"></i>
-
-                            SALVAR ALTERAÇÕES
-
-                        </button>
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-submit shadow-sm text-white">
+                                SALVAR ALTERAÇÕES
+                            </button>
+                            <a href="/2025/PROJETO_SGM/gestor_usuarios.php" class="btn btn-light btn-cancel text-muted border">
+                                Cancelar
+                            </a>
+                        </div>
 
                     </form>
 
                 </div>
 
-                <div class="text-center mt-4">
-
-                    <a href="/2025/PROJETO_SGM/gestor_usuarios.php"
-                        class="text-decoration-none text-secondary small">
-
-                        Cancelar e voltar
-
-                    </a>
-
-                </div>
+                <p class="text-center mt-4 mb-5 text-muted small">&copy; 2026 SGM Gestão de Manutenção</p>
 
             </div>
 

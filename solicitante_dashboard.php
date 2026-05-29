@@ -1,9 +1,26 @@
 <?php
 session_start();
+require_once 'config/database.php'; // Conexão mysqli ($conn)
+
+// Proteção da página
 if(!isset($_SESSION['user_id']) || $_SESSION['user_perfil'] !== 'solicitante'){
     header("Location:login.php");
     exit;
 }
+
+$user_id = $_SESSION['user_id'];
+
+// BUSCA DINÂMICA: Traz o nome e a foto corretos do solicitante logado
+$query_user = "SELECT nome, foto FROM usuarios WHERE id_usuario = ?";
+$stmt_user = $conn->prepare($query_user);
+$stmt_user->bind_param("i", $user_id);
+$stmt_user->execute();
+$res_user = $stmt_user->get_result()->fetch_assoc();
+$stmt_user->close();
+
+$nome_usuario = $res_user['nome'] ?? $_SESSION['user_nome'] ?? 'Solicitante';
+$tem_foto = !empty($res_user['foto']) && file_exists($res_user['foto']);
+$foto_caminho = $tem_foto ? $res_user['foto'] : '';
 ?>
 
 <!DOCTYPE html>
@@ -25,19 +42,127 @@ if(!isset($_SESSION['user_id']) || $_SESSION['user_perfil'] !== 'solicitante'){
             background-color: #f0f2f5; 
             font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; 
         }
+        
         .navbar-custom { 
             background: linear-gradient(135deg, var(--vinho-dark) 0%, var(--vinho-light) 100%);
             border-bottom: 4px solid var(--sgm-gold);
             height: 65px;
         }
+
+        /* BOTÃO HAMBURGUER DA NAVBAR */
+        .btn-menu-toggle {
+            background: transparent;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            margin-right: 15px;
+            transition: 0.2s;
+        }
+        .btn-menu-toggle:hover {
+            color: var(--sgm-gold);
+        }
+
+        /* CUSTOMIZAÇÃO DA SIDEBAR RETRÁTIL (OFFCANVAS) */
+        .offcanvas {
+            background-color: #ffffff;
+            border-right: 3px solid var(--sgm-gold) !important;
+            width: 300px !important;
+        }
+
+        .offcanvas-header {
+            background: linear-gradient(135deg, var(--vinho-dark) 0%, var(--vinho-light) 100%);
+            color: white;
+        }
+
+        /* CONTAINER DA FOTO DENTRO DO MENU */
+        .avatar-sidebar-container {
+            text-align: center;
+            padding: 20px 10px;
+            background-color: #fff8f8;
+            border-bottom: 1px solid #eee;
+            margin-bottom: 15px;
+        }
+
+        .avatar-circle-menu { 
+            width: 85px; 
+            height: 85px; 
+            background: var(--vinho-light); 
+            color: white; 
+            border-radius: 50%; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            font-size: 2rem; 
+            font-weight: bold; 
+            border: 3px solid var(--sgm-gold); 
+            box-shadow: 0 4px 10px rgba(0,0,0,0.15); 
+            overflow: hidden;
+            margin: 0 auto 10px;
+        }
+
+        .avatar-circle-menu img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* BOTÃO EDITAR PERFIL TOTALMENTE BLINDADO CONTRA AZUL */
+        .link-editar-menu, 
+        .link-editar-menu:link, 
+        .link-editar-menu:visited {
+            display: inline-block !important;
+            margin-top: 5px !important;
+            background-color: #990202 !important; /* Cor Vinho SGM Direta */
+            color: #ffffff !important; /* Texto Branco Puro */
+            font-weight: 700 !important;
+            font-size: 0.8rem !important;
+            text-transform: uppercase !important;
+            letter-spacing: 0.5px !important;
+            padding: 6px 16px !important;
+            border-radius: 50px !important;
+            text-decoration: none !important;
+            box-shadow: 0 2px 5px rgba(153,2,2,0.3) !important;
+            transition: all 0.2s ease !important;
+        }
+
+        .link-editar-menu:hover, 
+        .link-editar-menu:active {
+            background-color: #7a0101 !important; /* Vinho Escuro */
+            color: #ffc107 !important; /* Dourado SGM no Hover */
+            text-decoration: none !important;
+            transform: translateY(-1px) !important;
+        }
+
+        /* LINKS INTERNOS DO MENU GAVETA */
+        .menu-sidebar-item {
+            display: flex;
+            align-items: center;
+            padding: 14px 20px;
+            color: #495057;
+            font-weight: 600;
+            text-decoration: none;
+            border-radius: 10px;
+            margin: 4px 10px;
+            transition: 0.2s;
+        }
+
+        .menu-sidebar-item i {
+            font-size: 1.25rem;
+            margin-right: 15px;
+            color: var(--vinho-light);
+        }
+
+        .menu-sidebar-item:hover {
+            background-color: #fff0f1;
+            color: var(--vinho-light);
+        }
+
+        /* ESTILOS DA TABELA E CARDS */
         .main-card { 
             border: none; 
             border-radius: 16px; 
             box-shadow: 0 4px 12px rgba(0,0,0,0.03) !important; 
             background: white; 
-        }
-        .table-modern {
-            margin-bottom: 0;
         }
         .table-modern thead th { 
             font-weight: 700; 
@@ -85,10 +210,6 @@ if(!isset($_SESSION['user_id']) || $_SESSION['user_perfil'] !== 'solicitante'){
             border: none;
             box-shadow: 0 20px 40px rgba(0,0,0,0.2);
         }
-        .modal-evidencia .modal-header {
-            border-bottom: 1px solid #edf2f7;
-            background-color: #fafafa;
-        }
         .img-container-modal {
             background-color: #111;
             border-radius: 12px;
@@ -106,10 +227,7 @@ if(!isset($_SESSION['user_id']) || $_SESSION['user_perfil'] !== 'solicitante'){
             border-radius: 8px;
         }
 
-        /* Estrutura de visualização em Cards para Mobile */
-        .mobile-card-view {
-            display: none;
-        }
+        .mobile-card-view { display: none; }
         .os-mobile-card {
             background: white;
             border-radius: 14px;
@@ -118,18 +236,10 @@ if(!isset($_SESSION['user_id']) || $_SESSION['user_perfil'] !== 'solicitante'){
             box-shadow: 0 2px 6px rgba(0,0,0,0.02);
             transition: transform 0.2s;
         }
-        .os-mobile-card:active {
-            transform: scale(0.99);
-        }
 
-        /* Chaves de Media Query Otimizadas para Mobile-First */
         @media (max-width: 767.98px) {
-            .desktop-table-view {
-                display: none !important;
-            }
-            .mobile-card-view {
-                display: block;
-            }
+            .desktop-table-view { display: none !important; }
+            .mobile-card-view { display: block; }
             .header-solicitante {
                 flex-direction: column;
                 text-align: center;
@@ -148,17 +258,59 @@ if(!isset($_SESSION['user_id']) || $_SESSION['user_perfil'] !== 'solicitante'){
 <header>
     <nav class="navbar navbar-custom py-2 mb-4 shadow-sm">
         <div class="container d-flex justify-content-between align-items-center">
-            <span class="navbar-brand text-white fw-bold m-0 fs-5">
-                <i class="bi bi-person-workspace text-warning me-2"></i>SGM Solicitante
-            </span>
+            <div class="d-flex align-items-center">
+                <button class="btn-menu-toggle" type="button" data-bs-toggle="offcanvas" data-bs-target="#menuLateralSolicitante" aria-controls="menuLateralSolicitante">
+                    <i class="bi bi-list fs-2"></i>
+                </button>
+                <span class="navbar-brand text-white fw-bold m-0 fs-5">
+                    <i class="bi bi-person-workspace text-warning me-2"></i>SGM Solicitante
+                </span>
+            </div>
             <div class="navbar-nav">
-                <a href="api/logout.php" class="btn btn-outline-light btn-sm rounded-pill px-3 fw-semibold">
-                    <i class="bi bi-box-arrow-right me-1"></i> Sair
-                </a>
+                <button type="button" class="btn btn-outline-light btn-sm rounded-pill px-3" data-bs-toggle="modal" data-bs-target="#modalLogout">
+                    Sair
+                </button>
             </div>
         </div>
     </nav>
 </header>
+
+<div class="offcanvas offcanvas-start" tabindex="-1" id="menuLateralSolicitante" aria-labelledby="menuLateralSolicitanteLabel">
+    <div class="offcanvas-header shadow-sm">
+        <h5 class="offcanvas-title fw-bold" id="menuLateralSolicitanteLabel">
+            <i class="bi bi-sliders me-2 text-warning"></i>Opções
+        </h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+    </div>
+    <div class="offcanvas-body p-0">
+        
+        <div class="avatar-sidebar-container">
+            <div class="avatar-circle-menu">
+                <?php if ($tem_foto): ?>
+                    <img src="<?= htmlspecialchars($foto_caminho) ?>" alt="Foto de Perfil">
+                <?php else: ?>
+                    <?= strtoupper(substr($nome_usuario, 0, 1)) ?>
+                <?php endif; ?>
+            </div>
+            <h6 class="fw-bold mb-1 text-dark"><?= htmlspecialchars($nome_usuario) ?></h6>
+            <span class="badge bg-dark-subtle text-dark-emphasis text-uppercase rounded-pill px-2 py-1 mb-2" style="font-size:0.65rem;">Solicitante</span>
+            <br>
+            <a href="perfil.php" class="link-editar-menu text-white" style="background-color: #990202 !important; color: #ffffff !important;">
+                <i class="bi bi-pencil-square me-1 text-white"></i>Editar Perfil
+            </a>
+        </div>
+
+        <div class="py-2">
+            <a href="solicitante_dashboard.php" class="menu-sidebar-item">
+                <i class="bi bi-house-door"></i> Minhas Solicitações
+            </a>
+            <a href="solicitante_abrir_chamado.php" class="menu-sidebar-item">
+                <i class="bi bi-plus-circle"></i> Nova Solicitação
+            </a>
+        </div>
+
+    </div>
+</div>
 
 <main class="container px-3">
     <div class="d-flex justify-content-between align-items-sm-center mb-4 header-solicitante">
@@ -185,13 +337,13 @@ if(!isset($_SESSION['user_id']) || $_SESSION['user_perfil'] !== 'solicitante'){
                     </tr>
                 </thead>
                 <tbody class="border-top-0">
-                    </tbody>
+                </tbody>
             </table>
         </div>
     </div>
 
     <div class="mobile-card-view id-container-mobile mb-5" id="containerCardsMobile">
-        </div>
+    </div>
 </main>
 
 <div class="modal fade modal-blur" id="modalFoto" tabindex="-1" aria-hidden="true">
@@ -225,6 +377,7 @@ function verFoto(url, idChamado) {
     new bootstrap.Modal(document.getElementById('modalFoto')).show();
 }
 
+/* FUNÇÃO CORRIGIDA: caminhoAlternativo escrito corretamente */
 function lidarComErroImagem(imgElement, caminhoAlternativo, idChamado) {
     if (imgElement.src.indexOf(caminhoAlternativo) === -1 && caminhoAlternativo) {
         imgElement.src = caminhoAlternativo;
@@ -293,7 +446,6 @@ async function carregarChamados() {
                 console.error(erroAnexo);
             }
 
-            // 1. Renderização Desktop (Tabela)
             linhasDesktop += `
                 <tr style="border-bottom: 1px solid #edf2f7;">
                     <td class="ps-3 text-muted fw-semibold small">#${c.id_chamado}</td>
@@ -310,7 +462,6 @@ async function carregarChamados() {
                 </tr>
             `;
 
-            // 2. Renderização Mobile (Cards Modernos)
             const acaoFotoMobile = fotoUrlOriginal ? `onclick="verFoto('${fotoUrlOriginal}', ${c.id_chamado})"` : '';
             cardsMobile += `
                 <div class="card os-mobile-card p-3 mb-3" style="border-left-color: ${coresBordaCard[statusAtual] || '#6c757d'}">
@@ -350,6 +501,24 @@ async function carregarChamados() {
 
 carregarChamados();
 </script>
+
+<div class="modal fade" id="modalLogout" tabindex="-1" aria-labelledby="modalLogoutLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" style="max-width: 400px;">
+        <div class="modal-content border-0 shadow" style="border-radius: 15px;">
+            <div class="modal-body text-center p-4">
+                <div class="text-warning mb-3">
+                    <i class="bi bi-exclamation-triangle-fill" style="font-size: 3rem;"></i>
+                </div>
+                <h5 class="fw-bold text-dark mb-2" id="modalLogoutLabel">Confirmar Saída</h5>
+                <p class="text-muted small mb-4">Você tem certeza que deseja encerrar sua sessão atual no SGM?</p>
+                <div class="d-flex gap-2 justify-content-center">
+                    <button type="button" class="btn btn-light rounded-pill px-4 fw-semibold text-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <a href="api/logout.php" class="btn btn-danger rounded-pill px-4 fw-semibold" style="background-color: #990202; border: none;">Sim, Sair</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
 </body>
 </html>

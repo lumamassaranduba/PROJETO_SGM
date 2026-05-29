@@ -7,7 +7,22 @@ if (!isset($_SESSION['user_id']) || $_SESSION['user_perfil'] !== 'tecnico') {
     exit;
 }
 
+$user_id = $_SESSION['user_id'];
 $aba = isset($_GET['aba']) ? $_GET['aba'] : 'pendentes';
+
+// Busca a foto e dados atualizados do técnico direto do banco
+$query_user = "SELECT nome, foto FROM usuarios WHERE id_usuario = ?";
+$stmt_user = $conn->prepare($query_user);
+$stmt_user->bind_param("i", $user_id);
+$stmt_user->execute();
+$res_user = $stmt_user->get_result()->fetch_assoc();
+$stmt_user->close();
+
+$nome_usuario = $res_user['nome'] ?? $_SESSION['user_nome'] ?? 'Técnico';
+
+// Verifica se tem foto cadastrada, senão usa a inicial como fallback estável
+$tem_foto = !empty($res_user['foto']) && file_exists($res_user['foto']);
+$foto_caminho = $tem_foto ? $res_user['foto'] : '';
 ?>
 <!DOCTYPE html>
 <html lang="pt-br">
@@ -28,77 +43,29 @@ $aba = isset($_GET['aba']) ? $_GET['aba'] : 'pendentes';
         body { 
             background-color: #f0f2f5; 
             font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; 
-            overflow-x: hidden; 
         }
         
-        /* Navbar Padrão SGM TÉCNICO */
         .navbar { 
             background: linear-gradient(135deg, var(--vinho-dark) 0%, var(--vinho-light) 100%); 
             border-bottom: 4px solid var(--sgm-gold); 
             height: 65px;
         }
-        
-        /* Sidebar Adaptável (Desktop vs Mobile) */
-        .card-menu { 
-            border: none; 
-            background: white; 
+
+        /* AJUSTE: Menu mais fino (260px) sem alterar nenhum estilo */
+        .offcanvas {
+            width: 290px !important;
+            border-right: 4px solid var(--sgm-gold);
         }
         
-        .perfil-section { 
-            background: #fff4f4; 
-            padding: 20px; 
-            text-align: center; 
-            border-bottom: 1px solid #dee2e6; 
-        }
-        
-        .avatar-circle { 
-            width: 55px; 
-            height: 55px; 
-            background: var(--vinho-light); 
-            color: white; 
-            border-radius: 50%; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            margin: 0 auto 8px; 
-            font-size: 1.4rem; 
-            font-weight: bold; 
-            border: 3px solid white; 
-            box-shadow: 0 3px 6px rgba(0,0,0,0.08); 
-        }
-        
-        /* Links de Navegação com Toque Ergonômico */
-        .nav-pills .nav-link { 
-            color: #555; 
-            font-weight: 600; 
-            border-radius: 12px; 
-            margin: 5px 10px; 
-            padding: 12px 16px; 
-            transition: 0.2s; 
-            text-decoration: none; 
-            display: flex;
-            align-items: center;
-        }
-        .nav-pills .nav-link.active { 
-            background-color: var(--vinho-light); 
-            color: white; 
-        }
-        .nav-pills .nav-link:hover:not(.active) { 
-            background-color: #f8f9fa; 
-            color: var(--vinho-light); 
-        }
-        
-        /* Cards de Chamados Mobile-First */
+        /* Estilos dos Cards de Chamados */
         .card-chamado { 
             border: none; 
             border-radius: 16px; 
-            transition: all 0.2s ease; 
             border-left: 6px solid #dee2e6; 
             background: white; 
             box-shadow: 0 4px 10px rgba(0,0,0,0.03) !important;
         }
         
-        /* Mudança de cor da borda baseado na prioridade */
         .border-prio-urgente { border-left-color: #dc3545 !important; }
         .border-prio-alta { border-left-color: #fd7e14 !important; }
         .border-prio-media { border-left-color: #0d6efd !important; }
@@ -110,7 +77,6 @@ $aba = isset($_GET['aba']) ? $_GET['aba'] : 'pendentes';
             font-size: 0.7rem; 
             font-weight: 700; 
             text-transform: uppercase; 
-            letter-spacing: 0.5px;
         }
         
         .prio-urgente { background-color: rgba(220, 53, 69, 0.1); color: #dc3545; }
@@ -139,81 +105,76 @@ $aba = isset($_GET['aba']) ? $_GET['aba'] : 'pendentes';
             font-weight: 700; 
             border: none; 
             padding: 12px; 
-            font-size: 0.9rem;
             transition: 0.2s;
         }
-        .btn-atender:hover { 
-            background-color: var(--vinho-dark); 
-            color: white; 
-        }
+        .btn-atender:hover { background-color: var(--vinho-dark); }
 
         .filtro-wrapper { 
             background: white; 
             border-radius: 16px; 
             padding: 16px; 
             margin-bottom: 20px; 
-            box-shadow: 0 4px 10px rgba(0,0,0,0.02); 
             border-top: 4px solid var(--sgm-gold);
         }
 
-        /* customização responsiva para Mobile */
-        @media (max-width: 767.98px) {
-            .card-menu {
-                min-height: auto !important;
-                border-radius: 0 0 16px 16px;
-                margin-bottom: 15px;
-                box-shadow: 0 4px 10px rgba(0,0,0,0.05);
-            }
-            .sidebar-col {
-                padding-right: calc(var(--bs-gutter-x) * .5) !important;
-            }
-            .perfil-section {
-                display: flex;
-                align-items: center;
-                text-align: left;
-                padding: 12px 15px;
-            }
-            .avatar-circle {
-                margin: 0 12px 0 0;
-                width: 45px;
-                height: 45px;
-                font-size: 1.1rem;
-            }
-            .nav-tabs-mobile {
-                display: flex !important;
-                flex-direction: row !important;
-                justify-content: space-around;
-                padding: 5px !important;
-            }
-            .nav-tabs-mobile .nav-link {
-                margin: 0 !important;
-                flex: 1;
-                justify-content: center;
-                font-size: 0.85rem;
-                padding: 10px 5px;
-                border-radius: 8px;
-            }
-            .contador-box {
-                border-top: none !important;
-                border-left: 1px solid #dee2e6;
-                padding: 0 15px !important;
-                display: flex;
-                flex-direction: column;
-                justify-content: center;
-                margin-left: auto;
-            }
-            .contador-box small { font-size: 0.6rem; }
-            .contador-box span { font-size: 1.2rem !important; }
+        /* Classes originais do seu CSS do Admin Gestor */
+        .offcanvas-header {
+            background-color: var(--vinho-dark);
+            color: white;
         }
-
-        @media (min-width: 768px) {
-            .card-menu {
-                min-height: calc(100vh - 65px);
-                border-radius: 0 20px 20px 0;
-            }
-            .sidebar-col {
-                padding-right: 0;
-            }
+        .avatar-sidebar-container {
+            padding: 20px;
+            text-align: center;
+            border-bottom: 1px solid #dee2e6;
+        }
+        .avatar-circle-menu {
+            width: 80px;
+            height: 80px;
+            background-color: var(--vinho-light);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            font-weight: bold;
+            margin: 0 auto 10px auto;
+            border: 2px solid var(--sgm-gold);
+            overflow: hidden;
+        }
+        .avatar-circle-menu img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .menu-sidebar-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 20px;
+            color: #333;
+            text-decoration: none;
+            font-weight: 500;
+            border-left: 4px solid transparent;
+        }
+        .menu-sidebar-item:hover {
+            background-color: #f8f9fa;
+            color: var(--vinho-light);
+        }
+        .menu-sidebar-item.active {
+            background-color: #fff4f4;
+            color: var(--vinho-light);
+            font-weight: bold;
+            border-left-color: var(--vinho-light);
+        }
+        .link-editar-menu {
+            color: var(--vinho-light);
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-decoration: none;
+        }
+        .link-editar-menu:hover {
+            text-decoration: underline;
         }
     </style>
 </head>
@@ -222,85 +183,111 @@ $aba = isset($_GET['aba']) ? $_GET['aba'] : 'pendentes';
 <nav class="navbar navbar-dark shadow-sm px-3">
     <div class="container-fluid d-flex justify-content-between align-items-center">
         <div class="d-flex align-items-center">
+            <button class="btn btn-link text-white p-0 me-3 shadow-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#menuLateralTecnico" aria-controls="menuLateralTecnico">
+                <i class="bi bi-list fs-1"></i>
+            </button>
             <i class="bi bi-tools text-warning fs-4 me-2"></i>
             <span class="navbar-brand fw-bold mb-0 fs-5">SGM TÉCNICO</span>
         </div>
-        <a href="api/logout.php" class="btn btn-sm btn-outline-light rounded-pill px-3 fw-semibold">Sair</a>
+        <button type="button" class="btn btn-outline-light btn-sm rounded-pill px-3" data-bs-toggle="modal" data-bs-target="#modalLogout">
+            Sair
+        </button>
     </div>
 </nav>
 
-<div class="container-fluid p-0">
-    <div class="row g-0">
-        <div class="col-12 col-md-3 col-xl-2 sidebar-col">
-            <div class="card card-menu shadow-sm">
-                <div class="perfil-section">
-                    <div class="avatar-circle">
-                        <?= strtoupper(substr($_SESSION['user_nome'] ?? 'T', 0, 1)) ?>
-                    </div>
-                    <div>
-                        <h6 class="fw-bold mb-0 text-dark small-mobile-text"><?= $_SESSION['user_nome'] ?? 'Técnico' ?></h6>
-                        <small class="text-muted text-uppercase d-block" style="font-size: 0.65rem; letter-spacing: 0.5px;">
-                            <i class="bi bi-shield-check text-success"></i> Autorizado
-                        </small>
-                    </div>
-                    
-                    <div class="contador-box p-3 bg-light text-center border-top mt-2 d-none d-md-block">
-                        <small class="text-muted d-block mb-1">Chamados listados:</small>
-                        <span id="contador" class="h4 fw-bold text-dark">0</span>
-                    </div>
-                </div>
-
-                <div class="nav flex-column nav-pills py-2 nav-tabs-mobile">
-                    <a href="?aba=pendentes" class="nav-link <?= $aba === 'pendentes' ? 'active' : '' ?>">
-                        <i class="bi bi-list-task me-1 me-md-2"></i> Pendentes
-                    </a>
-                    <a href="?aba=concluidos" class="nav-link <?= $aba === 'concluidos' ? 'active' : '' ?>">
-                        <i class="bi bi-check-circle-fill me-1 me-md-2"></i> Concluídos
-                    </a>
-                </div>
+<div class="offcanvas offcanvas-start" tabindex="-1" id="menuLateralTecnico" aria-labelledby="menuLateralTecnicoLabel">
+    <div class="offcanvas-header shadow-sm">
+        <h5 class="offcanvas-title fw-bold" id="menuLateralTecnicoLabel">
+            <i class="bi bi-sliders me-2 text-warning"></i>Painel de Controle
+        </h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+    </div>
+    <div class="offcanvas-body p-0">
+        
+        <div class="avatar-sidebar-container">
+            <div class="avatar-circle-menu">
+                <?php if ($tem_foto): ?>
+                    <img src="<?= htmlspecialchars($foto_caminho) ?>" alt="Foto de Perfil">
+                <?php else: ?>
+                    <?= strtoupper(substr($nome_usuario, 0, 1)) ?>
+                <?php endif; ?>
             </div>
+            <h6 class="fw-bold mb-1 text-dark"><?= htmlspecialchars($nome_usuario) ?></h6>
+            <span class="badge bg-dark-subtle text-dark-emphasis text-uppercase rounded-pill px-2 py-1 mb-2" style="font-size:0.65rem;">Técnico</span>
+            <br>
+            <a href="perfil.php" class="link-editar-menu">
+                <i class="bi bi-pencil-square me-1"></i>Editar Perfil
+            </a>
         </div>
 
-        <div class="col-12 col-md-9 col-xl-10 p-3 p-md-4">
-            
-            <div class="filtro-wrapper">
-                <div class="row g-2 align-items-center">
-                    <div class="col-12 col-lg-3 text-center text-lg-start">
-                        <h5 class="fw-bold mb-0 text-dark fs-5">
-                            <?= $aba === 'pendentes' ? 'Tarefas Pendentes' : 'Histórico Concluído' ?>
-                        </h5>
-                    </div>
-                    <div class="col-6 col-lg-3">
-                        <div class="input-group input-group-sm">
-                            <span class="input-group-text bg-light text-muted d-none d-sm-flex"><i class="bi bi-exclamation-triangle"></i></span>
-                            <select id="filtroImportancia" class="form-select py-2" onchange="filtrarEExibir()">
-                                <option value="">Importâncias</option>
-                                <option value="urgente">Urgente</option>
-                                <option value="alta">Alta</option>
-                                <option value="media">Média</option>
-                                <option value="baixa">Baixa</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="col-6 col-lg-3">
-                        <div class="input-group input-group-sm">
-                            <span class="input-group-text bg-light text-muted d-none d-sm-flex"><i class="bi bi-calendar-event"></i></span>
-                            <input type="date" id="filtroData" class="form-control py-2" onchange="filtrarEExibir()">
-                        </div>
-                    </div>
-                    <div class="col-12 col-lg-3 text-center text-lg-end mt-2 mt-lg-0">
-                        <button onclick="limparFiltros()" class="btn btn-sm btn-outline-secondary rounded-pill w-100 w-lg-auto px-3 py-2">
-                            <i class="bi bi-arrow-clockwise"></i> Limpar Filtros
-                        </button>
-                    </div>
+        <div class="py-2">
+            <a href="?aba=pendentes" class="menu-sidebar-item <?= $aba === 'pendentes' ? 'active' : '' ?>">
+                <i class="bi bi-list-ul"></i> Chamados Pendentes
+            </a>
+            <a href="?aba=concluidos" class="menu-sidebar-item <?= $aba === 'concluidos' ? 'active' : '' ?>">
+                <i class="bi bi-check-circle"></i> Histórico Concluído
+            </a>
+        </div>
+
+    </div>
+</div>
+
+<div class="container-fluid p-3 p-md-4">
+    <div class="filtro-wrapper">
+        <div class="row g-2 align-items-center">
+            <div class="col-12 col-lg-3 text-center text-lg-start">
+                <h5 class="fw-bold mb-0 text-dark fs-5">
+                    <?= $aba === 'pendentes' ? 'Tarefas Pendentes' : 'Histórico Concluído' ?>
+                </h5>
+            </div>
+            <div class="col-6 col-lg-3">
+                <div class="input-group input-group-sm">
+                    <span class="input-group-text bg-light text-muted d-none d-sm-flex"><i class="bi bi-exclamation-triangle"></i></span>
+                    <select id="filtroImportancia" class="form-select py-2" onchange="filtrarEExibir()">
+                        <option value="">Importâncias</option>
+                        <option value="urgente">Urgente</option>
+                        <option value="alta">Alta</option>
+                        <option value="media">Média</option>
+                        <option value="baixa">Baixa</option>
+                    </select>
                 </div>
             </div>
+            <div class="col-6 col-lg-3">
+                <div class="input-group input-group-sm">
+                    <span class="input-group-text bg-light text-muted d-none d-sm-flex"><i class="bi bi-calendar-event"></i></span>
+                    <input type="date" id="filtroData" class="form-control py-2" onchange="filtrarEExibir()">
+                </div>
+            </div>
+            <div class="col-12 col-lg-3 text-center text-lg-end mt-2 mt-lg-0">
+                <button onclick="limparFiltros()" class="btn btn-sm btn-outline-secondary rounded-pill w-100 w-lg-auto px-3 py-2">
+                    <i class="bi bi-arrow-clockwise"></i> Limpar Filtros
+                </button>
+            </div>
+        </div>
+    </div>
 
-            <div id="listaChamados" class="row g-3">
-                 </div>
+    <div id="listaChamados" class="row g-3"></div>
+</div>
+
+<div class="modal fade" id="modalLogout" tabindex="-1" aria-labelledby="modalLogoutLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" style="max-width: 400px;">
+        <div class="modal-content border-0 shadow" style="border-radius: 15px;">
+            <div class="modal-body text-center p-4">
+                <div class="text-warning mb-3">
+                    <i class="bi bi-exclamation-triangle-fill" style="font-size: 3rem;"></i>
+                </div>
+                <h5 class="fw-bold text-dark mb-2" id="modalLogoutLabel">Confirmar Saída</h5>
+                <p class="text-muted small mb-4">Você tem certeza que deseja encerrar sua sessão atual no SGM?</p>
+                <div class="d-flex gap-2 justify-content-center">
+                    <button type="button" class="btn btn-light rounded-pill px-4 fw-semibold text-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <a href="api/logout.php" class="btn btn-danger rounded-pill px-4 fw-semibold" style="background-color: #990202; border: none;">Sim, Sair</a>
+                </div>
+            </div>
         </div>
     </div>
 </div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
 <script>
 const ABA_ATUAL = '<?= $aba ?>';
@@ -344,9 +331,6 @@ function filtrarEExibir() {
 
         return bateImportancia && bateData;
     });
-
-    const numContador = document.getElementById('contador');
-    if(numContador) numContador.innerText = chamadosFiltrados.length;
 
     if (chamadosFiltrados.length === 0) {
         lista.innerHTML = `

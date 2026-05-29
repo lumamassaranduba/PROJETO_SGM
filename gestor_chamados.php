@@ -26,7 +26,9 @@ if (!isset($_SESSION['user_id']) || $_SESSION['user_perfil'] !== 'gestor') {
         <div class="navbar-nav ms-auto gap-2">
             <a class="nav-link px-3 rounded-pill text-light bg-white bg-opacity-10" href="gestor_chamados.php">Chamados</a>
             <a class="nav-link px-3 text-light" href="./gestor_dashboard.php">Home</a>
-            <a href="api/logout.php" class="btn btn-outline-light btn-sm ms-2 rounded-pill px-3">Sair</a>
+            <button type="button" class="btn btn-outline-light btn-sm rounded-pill px-3" data-bs-toggle="modal" data-bs-target="#modalLogout">
+    Sair
+</button>
         </div>
     </div>
 </nav>
@@ -139,5 +141,25 @@ async function carregarChamados(status = '') {
 
 carregarChamados();
 </script>
+
+
+<div class="modal fade" id="modalLogout" tabindex="-1" aria-labelledby="modalLogoutLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" style="max-width: 400px;">
+        <div class="modal-content border-0 shadow" style="border-radius: 15px;">
+            <div class="modal-body text-center p-4">
+                <div class="text-warning mb-3">
+                    <i class="bi bi-exclamation-triangle-fill" style="font-size: 3rem;"></i>
+                </div>
+                <h5 class="fw-bold text-dark mb-2" id="modalLogoutLabel">Confirmar Saída</h5>
+                <p class="text-muted small mb-4">Você tem certeza que deseja encerrar sua sessão atual no SGM?</p>
+                
+                <div class="d-flex gap-2 justify-content-center">
+                    <button type="button" class="btn btn-light rounded-pill px-4 fw-semibold text-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <a href="api/logout.php" class="btn btn-danger rounded-pill px-4 fw-semibold" style="background-color: #990202; border: none;">Sim, Sair</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 </body>
 </html>

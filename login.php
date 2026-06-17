@@ -1,5 +1,3 @@
-
-
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
@@ -35,21 +33,19 @@
             display: flex;
         }
 
-        /* Lado Bordô - CENTRALIZADO */
         .brand-section {
             background-color: var(--primary-color);
             color: white;
             padding: 50px;
-            flex: 1.1; /* Aumentado levemente para dar mais respiro ao texto */
+            flex: 1.1;
             display: flex;
             flex-direction: column;
-            justify-content: center; /* Centraliza verticalmente */
-            align-items: center;     /* Centraliza horizontalmente */
+            justify-content: center;
+            align-items: center;
             position: relative;
             text-align: center;
         }
 
-        /* Curva orgânica */
         .brand-section::after {
             content: "";
             position: absolute;
@@ -61,7 +57,6 @@
             clip-path: ellipse(100% 100% at 100% 50%);
         }
 
-        /* Lado do Formulário */
         .form-section {
             flex: 1.2;
             padding: 60px;
@@ -133,17 +128,10 @@
             font-size: 0.9rem;
         }
 
-        /* Responsividade */
         @media (max-width: 768px) {
-            .login-card {
-                flex-direction: column;
-            }
-            .brand-section::after {
-                display: none;
-            }
-            .brand-section {
-                padding: 50px 20px;
-            }
+            .login-card { flex-direction: column; }
+            .brand-section::after { display: none; }
+            .brand-section { padding: 50px 20px; }
         }
     </style>
 </head>
@@ -164,7 +152,7 @@
             <form id="formLogin">
                 <div class="input-group">
                     <span class="input-group-text"><i class="bi bi-envelope"></i></span>
-                    <input type="email" id="email" class="form-control" placeholder="E-mail ou Telefone" required>
+                    <input type="email" id="email" class="form-control" placeholder="E-mail" required>
                 </div>
 
                 <div class="input-group">
@@ -172,15 +160,80 @@
                     <input type="password" id="senha" class="form-control" placeholder="Senha" required>
                 </div>
 
-                <div class="d-flex justify-content-between align-items-center mt-4">
-                    <a href="#" class="forgot-password">Esqueceu a senha?</a>
-                    <button type="submit" class="btn btn-login shadow-sm">ENTRAR</button>
+                <div id="mensagem" class="alert alert-danger d-none text-center py-2" style="border-radius: 25px; font-size: 0.9rem;"></div>
+
+                <div class="d-flex justify-content-between align-items-center mt-3">
+                    <a href="#" class="forgot-password"></a>
+                    <button type="submit" id="btnEntrar" class="btn btn-login shadow-sm">ENTRAR</button>
                 </div>
             </form>
         </div>
     </div>
 
-    <script src="assets/js/login.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+    document.getElementById('formLogin').addEventListener('submit', async function(e) {
+        e.preventDefault(); 
+
+        const btn = document.getElementById('btnEntrar');
+        const msg = document.getElementById('mensagem');
+        
+        msg.classList.add('d-none');
+        msg.innerText = '';
+
+        btn.disabled = true;
+        btn.innerText = "CARREGANDO...";
+
+        const emailInput = document.getElementById('email').value.trim();
+        const senhaInput = document.getElementById('senha').value;
+
+        try {
+            const resposta = await fetch('api/login.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    email: emailInput,
+                    senha: senhaInput
+                })
+            });
+
+            if (!resposta.ok) {
+                throw new Error("Erro de rede");
+            }
+
+            const result = await resposta.json();
+
+            if (result.success === true) {
+                
+                // CORREÇÃO DA SINTAXE: Blocos de condições devidamente encadeados e fechados
+                if (result.perfil === 'admin' || result.perfil === 'gestor') {
+                    window.location.href = 'gestor_dashboard.php';
+                } else if (result.perfil === 'solicitante') {
+                    window.location.href = 'solicitante_dashboard.php';
+                } else {
+                    window.location.href = 'tecnico_dashboard.php';
+                }
+
+            } else {
+                msg.innerText = result.message || "Erro ao realizar login.";
+                msg.classList.remove('d-none');
+                
+                btn.disabled = false;
+                btn.innerText = "ENTRAR";
+            }
+
+        } catch (erro) {
+            console.error("Erro:", erro);
+            msg.innerText = "Falha ao processar requisição.";
+            msg.classList.remove('d-none');
+            
+            btn.disabled = false;
+            btn.innerText = "ENTRAR";
+        }
+    });
+    </script>
 </body>
 </html>

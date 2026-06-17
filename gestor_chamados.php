@@ -12,28 +12,69 @@ if (!isset($_SESSION['user_id']) || $_SESSION['user_perfil'] !== 'gestor') {
 <title>SGM - Gestão de Chamados</title>
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+
+<style>
+    /* Identidade Visual Padronizada SGM */
+    :root {
+        --vinho-dark: #7a0101;
+        --vinho-light: #990202;
+        --sgm-gold: #ffc107;
+    }
+    
+    /* Navbar Padrão SGM ADMIN Exata da Foto */
+    .navbar-sgm { 
+        background-color: var(--vinho-light); 
+        border-bottom: 4px solid var(--sgm-gold); 
+        height: 65px; 
+    }
+
+    /* Estilização do Botão Voltar igual ao padrão da foto */
+    .btn-voltar-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        color: #6c757d;
+        font-weight: 600;
+        font-size: 0.9rem;
+        text-decoration: none;
+        padding: 6px 16px;
+        background-color: #ffffff;
+        border: 1px solid #dee2e6;
+        border-radius: 50px;
+        transition: all 0.2s ease;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+    }
+    .btn-voltar-link:hover {
+        color: var(--vinho-light);
+        border-color: var(--vinho-light);
+        background-color: rgba(153, 2, 2, 0.03);
+    }
+</style>
 </head>
 
 <body class="bg-light" style="font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;">
 
-<nav class="navbar navbar-expand-lg shadow-sm mb-5" style="background-color: #990202;">
-    <div class="container py-1">
-        <a href="gestor_dashboard.php" class="btn btn-link text-light text-decoration-none me-2">
-            <i class="bi bi-arrow-left-circle-fill fs-4"></i>
-        </a>
-        <a class="navbar-brand text-light fw-bold" href="gestor_dashboard.php">SGM Admin</a>
-        
-        <div class="navbar-nav ms-auto gap-2">
-            <a class="nav-link px-3 rounded-pill text-light bg-white bg-opacity-10" href="gestor_chamados.php">Chamados</a>
-            <a class="nav-link px-3 text-light" href="./gestor_dashboard.php">Home</a>
-            <button type="button" class="btn btn-outline-light btn-sm rounded-pill px-3" data-bs-toggle="modal" data-bs-target="#modalLogout">
-    Sair
-</button>
+<header>
+    <nav class="navbar navbar-sgm shadow-sm mb-4 px-4">
+        <div class="container-fluid d-flex justify-content-between align-items-center">
+            <div class="d-flex align-items-center">
+                <i class="bi bi-shield-lock-fill text-warning fs-3 me-2"></i>
+                <a class="navbar-brand fw-bold mb-0 text-white" href="gestor_dashboard.php" style="letter-spacing: 0.5px;">SGM ADMIN</a>
+            </div>
+            <button type="button" class="btn btn-outline-light btn-sm rounded-pill px-4" data-bs-toggle="modal" data-bs-target="#modalLogout">
+                Sair
+            </button>
         </div>
-    </div>
-</nav>
+    </nav>
+</header>
 
-<div class="container">
+<main class="container px-3">
+    <div class="mb-4">
+        <a href="gestor_dashboard.php" class="btn btn-voltar-link">
+            <i class="bi bi-arrow-left"></i> Voltar ao Menu Principal
+        </a>
+    </div>
+
     <div class="row align-items-center mb-4">
         <div class="col">
             <h2 class="fw-bold text-dark m-0">Todos os Chamados</h2>
@@ -45,6 +86,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['user_perfil'] !== 'gestor') {
                 <button class="btn btn-sm rounded-pill px-3 btn-outline-primary border-0" onclick="carregarChamados('aberto')">Abertos</button>
                 <button class="btn btn-sm rounded-pill px-3 btn-outline-warning border-0" onclick="carregarChamados('em_execucao')">Execução</button>
                 <button class="btn btn-sm rounded-pill px-3 btn-outline-success border-0" onclick="carregarChamados('concluido')">Concluídos</button>
+                <button class="btn btn-sm rounded-pill px-3 btn-outline-secondary border-0" onclick="carregarChamados('fechado')">Fechados</button>
             </div>
         </div>
     </div>
@@ -64,11 +106,11 @@ if (!isset($_SESSION['user_id']) || $_SESSION['user_perfil'] !== 'gestor') {
                     </tr>
                 </thead>
                 <tbody id="tabelaGeral" class="border-top-0">
-                    </tbody>
+                </tbody>
             </table>
         </div>
     </div>
-</div>
+</main>
 
 <div class="modal fade" id="modalFoto" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered">
@@ -101,8 +143,24 @@ const coresStatus = {
 };
 
 async function carregarChamados(status = '') {
-    const res = await fetch(`api/gestor_chamados.php?status=${status}`);
-    const chamados = await res.json();
+    // Se o filtro ativo for 'fechado', dizemos para a API trazer tudo para filtrarmos localmente no JS
+    const statusFiltroApi = (status === 'fechado') ? '' : status;
+    
+    const res = await fetch(`api/gestor_chamados.php?status=${statusFiltroApi}`);
+    let chamados = await res.json();
+    
+    // Regras de Filtragem no Front-end:
+    if (status === '') {
+        // Na aba "Todos", exibe os ativos e concluídos, mas oculta os arquivados (fechado)
+        chamados = chamados.filter(c => c.status !== 'fechado');
+    } else if (status === 'fechado') {
+        // Na aba "Fechados", filtra para exibir unicamente quem tem o status 'fechado'
+        chamados = chamados.filter(c => c.status === 'fechado');
+    }
+    
+    // ORDENAÇÃO POR ID DESC: Organiza do maior ID para o menor
+    chamados.sort((a, b) => parseInt(b.id_chamado) - parseInt(a.id_chamado));
+    
     const body = document.getElementById('tabelaGeral');
 
     body.innerHTML = chamados.map(c => `
@@ -139,9 +197,9 @@ async function carregarChamados(status = '') {
     `).join('');
 }
 
+// Inicializa a tela carregando a listagem padrão
 carregarChamados();
 </script>
-
 
 <div class="modal fade" id="modalLogout" tabindex="-1" aria-labelledby="modalLogoutLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered" style="max-width: 400px;">

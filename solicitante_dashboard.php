@@ -62,11 +62,11 @@ $foto_caminho = $tem_foto ? $res_user['foto'] : '';
             color: var(--sgm-gold);
         }
 
-        /* CUSTOMIZAÇÃO DA SIDEBAR RETRÁTIL (OFFCANVAS) */
+        /* CUSTOMIZAÇÃO DA SIDEBAR RETRÁTIL (OFFCANVAS) - AJUSTADO PARA PADRÃO FINO 260PX */
         .offcanvas {
             background-color: #ffffff;
             border-right: 3px solid var(--sgm-gold) !important;
-            width: 300px !important;
+            width: 260px !important;
         }
 
         .offcanvas-header {
@@ -106,14 +106,14 @@ $foto_caminho = $tem_foto ? $res_user['foto'] : '';
             object-fit: cover;
         }
 
-        /* BOTÃO EDITAR PERFIL TOTALMENTE BLINDADO CONTRA AZUL */
+        /* BOTÃO EDITAR PERFIL */
         .link-editar-menu, 
         .link-editar-menu:link, 
         .link-editar-menu:visited {
             display: inline-block !important;
             margin-top: 5px !important;
-            background-color: #990202 !important; /* Cor Vinho SGM Direta */
-            color: #ffffff !important; /* Texto Branco Puro */
+            background-color: #990202 !important;
+            color: #ffffff !important;
             font-weight: 700 !important;
             font-size: 0.8rem !important;
             text-transform: uppercase !important;
@@ -127,8 +127,8 @@ $foto_caminho = $tem_foto ? $res_user['foto'] : '';
 
         .link-editar-menu:hover, 
         .link-editar-menu:active {
-            background-color: #7a0101 !important; /* Vinho Escuro */
-            color: #ffc107 !important; /* Dourado SGM no Hover */
+            background-color: #7a0101 !important;
+            color: #ffc107 !important;
             text-decoration: none !important;
             transform: translateY(-1px) !important;
         }
@@ -377,7 +377,6 @@ function verFoto(url, idChamado) {
     new bootstrap.Modal(document.getElementById('modalFoto')).show();
 }
 
-/* FUNÇÃO CORRIGIDA: caminhoAlternativo escrito corretamente */
 function lidarComErroImagem(imgElement, caminhoAlternativo, idChamado) {
     if (imgElement.src.indexOf(caminhoAlternativo) === -1 && caminhoAlternativo) {
         imgElement.src = caminhoAlternativo;
@@ -392,7 +391,10 @@ function lidarComErroImagem(imgElement, caminhoAlternativo, idChamado) {
 async function carregarChamados() {
     try {
         const response = await fetch('api/chamados.php');
-        const chamados = await response.json();
+        let chamados = await response.json();
+        
+        // ALTERAÇÃO COMPLEMENTAR: Garante a ordenação decrescente por ID via JS caso a API mude
+        chamados.sort((a, b) => parseInt(b.id_chamado) - parseInt(a.id_chamado));
         
         const tbody = document.querySelector('#tabelaChamados tbody');
         const containerMobile = document.getElementById('containerCardsMobile');

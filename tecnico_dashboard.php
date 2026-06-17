@@ -51,7 +51,7 @@ $foto_caminho = $tem_foto ? $res_user['foto'] : '';
             height: 65px;
         }
 
-        /* AJUSTE: Menu mais fino (260px) sem alterar nenhum estilo */
+        /* Menu mais fino (290px) sem alterar nenhum estilo */
         .offcanvas {
             width: 290px !important;
             border-right: 4px solid var(--sgm-gold);
@@ -86,6 +86,7 @@ $foto_caminho = $tem_foto ? $res_user['foto'] : '';
         
         .status-em-execucao { background-color: #fff3cd; color: #856404; border: 1px solid #ffeeba; }
         .status-aberto { background-color: #e2e3e5; color: #383d41; border: 1px solid #d6d8db; }
+        .status-fechado { background-color: #e2e3e5; color: #6c757d; border: 1px solid #dee2e6; }
         
         .icon-circle { 
             width: 36px; 
@@ -117,7 +118,6 @@ $foto_caminho = $tem_foto ? $res_user['foto'] : '';
             border-top: 4px solid var(--sgm-gold);
         }
 
-        /* Classes originais do seu CSS do Admin Gestor */
         .offcanvas-header {
             background-color: var(--vinho-dark);
             color: white;
@@ -227,6 +227,9 @@ $foto_caminho = $tem_foto ? $res_user['foto'] : '';
             <a href="?aba=concluidos" class="menu-sidebar-item <?= $aba === 'concluidos' ? 'active' : '' ?>">
                 <i class="bi bi-check-circle"></i> Histórico Concluído
             </a>
+            <a href="?aba=fechados" class="menu-sidebar-item <?= $aba === 'fechados' ? 'active' : '' ?>">
+                <i class="bi bi-archive"></i> Chamados Fechados
+            </a>
         </div>
 
     </div>
@@ -237,7 +240,11 @@ $foto_caminho = $tem_foto ? $res_user['foto'] : '';
         <div class="row g-2 align-items-center">
             <div class="col-12 col-lg-3 text-center text-lg-start">
                 <h5 class="fw-bold mb-0 text-dark fs-5">
-                    <?= $aba === 'pendentes' ? 'Tarefas Pendentes' : 'Histórico Concluído' ?>
+                    <?php 
+                        if ($aba === 'pendentes') echo 'Tarefas Pendentes';
+                        elseif ($aba === 'concluidos') echo 'Histórico Concluído';
+                        else echo 'Chamados Fechados';
+                    ?>
                 </h5>
             </div>
             <div class="col-6 col-lg-3">
@@ -301,9 +308,11 @@ async function carregarTarefas() {
         cacheChamados = todosChamados.filter(c => {
             const st = (c.status || 'aberto').toLowerCase().trim();
             if (ABA_ATUAL === 'pendentes') {
-                return st !== 'concluido' && st !== 'fechado';
+                return st === 'aberto' || st === 'em_execucao';
+            } else if (ABA_ATUAL === 'concluidos') {
+                return st === 'concluido';
             } else {
-                return st === 'concluido' || st === 'fechado';
+                return st === 'fechado';
             }
         });
 
@@ -353,21 +362,29 @@ function filtrarEExibir() {
         const statusLimpo = (c.status || 'aberto').toLowerCase().trim();
         let badgeStatusClasse = 'status-aberto';
         if (statusLimpo === 'em_execucao') badgeStatusClasse = 'status-em-execucao';
-        else if (statusLimpo === 'concluido' || statusLimpo === 'fechado') badgeStatusClasse = 'bg-success text-white';
+        else if (statusLimpo === 'fechado') badgeStatusClasse = 'status-fechado';
+        else if (statusLimpo === 'concluido') badgeStatusClasse = 'bg-success text-white';
 
         const textoBotao = ABA_ATUAL === 'pendentes' ? `Atender #${c.id_chamado}` : `Ver Detalhes`;
         const btnClasse = ABA_ATUAL === 'pendentes' ? `btn-atender` : `btn-outline-secondary rounded-pill py-2`;
+
+        // Verifica sinalizador de chamado reaberto (verifica se campo existe e é verdadeiro ou string indicativa)
+        const ehReaberto = (c.reaberto == 1 || c.reaberto == 'true' || (c.historico_status && c.historico_status.toLowerCase().includes('reaberto')));
+        const badgeReaberto = ehReaberto ? `<span class="badge bg-warning text-dark px-2 py-1 text-uppercase fw-bold shadow-sm" style="font-size: 0.65rem;"><i class="bi bi-arrow-counterclockwise"></i> Reaberto</span>` : '';
 
         return `
         <div class="col-12 col-md-6 col-xxl-4">
             <div class="card card-chamado border-prio-${prioridadeLimpa} h-100">
                 <div class="card-body d-flex flex-column p-3">
-                    <div class="d-flex justify-content-between mb-3 align-items-center">
+                    <div class="d-flex justify-content-between mb-2 align-items-center flex-wrap gap-1">
                         <span class="status-badge ${badgeStatusClasse}">${(c.status || 'aberto').replace('_', ' ')}</span>
-                        <span class="status-badge prio-${prioridadeLimpa}"><i class="bi bi-exclamation-circle me-1"></i>${c.prioridade || 'Média'}</span>
+                        <div class="d-flex gap-1 align-items-center">
+                            ${badgeReaberto}
+                            <span class="status-badge prio-${prioridadeLimpa}"><i class="bi bi-exclamation-circle me-1"></i>${c.prioridade || 'Média'}</span>
+                        </div>
                     </div>
                     
-                    <div class="d-flex align-items-center mb-2">
+                    <div class="d-flex align-items-center mb-2 mt-1">
                         <div class="icon-circle me-2 flex-shrink-0"><i class="bi bi-geo-alt-fill"></i></div>
                         <div class="overflow-hidden">
                             <h6 class="fw-bold mb-0 text-dark text-truncate small" style="font-size:0.95rem;">${c.bloco_nome || 'Geral'}</h6>

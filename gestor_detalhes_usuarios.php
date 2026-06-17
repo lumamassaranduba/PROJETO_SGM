@@ -118,13 +118,7 @@ if (!$usuario) {
         }
 
         /* Botões Mobile-Friendly */
-        .btn-action-edit {
-            border-radius: 50px;
-            padding: 12px;
-            font-weight: 700;
-            font-size: 0.9rem;
-        }
-        .btn-action-delete {
+        .btn-action-edit, .btn-action-delete, .btn-action-password {
             border-radius: 50px;
             padding: 12px;
             font-weight: 700;
@@ -153,8 +147,8 @@ if (!$usuario) {
                 <a class="navbar-brand fw-bold mb-0 text-white" href="gestor_dashboard.php">SGM ADMIN</a>
             </div>
             <button type="button" class="btn btn-outline-light btn-sm rounded-pill px-3" data-bs-toggle="modal" data-bs-target="#modalLogout">
-    Sair
-</button>
+                Sair
+            </button>
         </div>
     </nav>
 </header>
@@ -224,6 +218,14 @@ if (!$usuario) {
                         </a>
                     </div>
                 </div>
+
+                <div class="row mt-2 g-2">
+                    <div class="col-12">
+                        <button type="button" class="btn btn-dark btn-action-password w-100 shadow-sm text-white" style="background-color: var(--vinho-dark); border: none;" data-bs-toggle="modal" data-bs-target="#modalAlterarSenha">
+                            <i class="bi bi-key-fill me-1"></i> ALTERAR SENHA DO USUÁRIO
+                        </button>
+                    </div>
+                </div>
             </div>
 
         </div>
@@ -249,5 +251,108 @@ if (!$usuario) {
         </div>
     </div>
 </div>
+
+<div class="modal fade" id="modalAlterarSenha" tabindex="-1" aria-labelledby="modalAlterarSenhaLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" style="max-width: 420px;">
+        <div class="modal-content border-0 shadow" style="border-radius: 20px;">
+            <div class="modal-header border-0 pt-4 px-4 pb-0">
+                <h5 class="fw-bold text-dark mb-0" id="modalAlterarSenhaLabel"><i class="bi bi-shield-lock-fill text-warning me-2"></i>Nova Senha</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+                <p class="text-muted small mb-3">Defina uma nova senha de acesso para <strong><?= htmlspecialchars($usuario['nome']) ?></strong>.</p>
+                
+                <form id="formAlterarSenha">
+                    <input type="hidden" id="idUsuarioSenha" value="<?= $usuario['id_usuario'] ?>">
+                    
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between">
+                            <label for="novaSenha" class="form-label small fw-bold text-secondary text-uppercase mb-1">Nova Senha</label>
+                        </div>
+                        <div class="input-group" style="background-color: #f8f9fa; border-radius: 50px; padding: 3px 15px; border: 1px solid #dee2e6;">
+                            <span class="input-group-text" style="background: transparent; border: none; color: #adb5bd;"><i class="bi bi-lock-fill"></i></span>
+                            <input type="password" id="novaSenha" class="form-control" style="background: transparent; border: none; box-shadow: none !important;" placeholder="Mínimo 4 caracteres" required>
+                        </div>
+                    </div>
+
+                    <div id="msgModal" class="alert d-none text-center py-2 mb-3" style="border-radius: 25px; font-size: 0.85rem;"></div>
+
+                    <div class="d-flex gap-2 justify-content-end mt-4">
+                        <button type="button" class="btn btn-light rounded-pill px-4 fw-semibold text-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" id="btnSalvarSenha" class="btn btn-danger rounded-pill px-4 fw-semibold" style="background-color: var(--vinho-light); border: none;">Salvar Senha</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.getElementById('formAlterarSenha').addEventListener('submit', async function(e) {
+    e.preventDefault();
+
+    const btn = document.getElementById('btnSalvarSenha');
+    const msg = document.getElementById('msgModal');
+    
+    const idUsuario = document.getElementById('idUsuarioSenha').value;
+    const novaSenha = document.getElementById('novaSenha').value;
+
+    // Reseta o estado do alerta do modal
+    msg.classList.add('d-none');
+    msg.classList.remove('alert-danger', 'alert-success');
+    msg.innerText = '';
+
+    btn.disabled = true;
+    btn.innerText = "Salvando...";
+
+    try {
+        const resposta = await fetch('api/alterar_senha.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                id_usuario: idUsuario,
+                nova_senha: novaSenha
+            })
+        });
+
+        if (!resposta.ok) {
+            throw new Error("Erro na comunicação com o servidor.");
+        }
+
+        const result = await resposta.json();
+
+        if (result.success === true) {
+            msg.classList.remove('d-none');
+            msg.classList.add('alert-success');
+            msg.innerText = "Senha alterada com sucesso!";
+            
+            // Fecha o modal automaticamente após 1.5 segundos
+            setTimeout(() => {
+                const modalElement = document.getElementById('modalAlterarSenha');
+                const modalInstance = bootstrap.Modal.getInstance(modalElement);
+                modalInstance.hide();
+                document.getElementById('novaSenha').value = '';
+            }, 1500);
+
+        } else {
+            msg.classList.remove('d-none');
+            msg.classList.add('alert-danger');
+            msg.innerText = result.message || "Erro ao alterar a senha.";
+            btn.disabled = false;
+            btn.innerText = "Salvar Senha";
+        }
+    } catch (erro) {
+        console.error(erro);
+        msg.classList.remove('d-none');
+        msg.classList.add('alert-danger');
+        msg.innerText = "Erro interno ao processar requisição.";
+        btn.disabled = false;
+        btn.innerText = "Salvar Senha";
+    }
+});
+</script>
+
 </body>
 </html>
